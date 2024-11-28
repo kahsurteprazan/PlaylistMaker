@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    >
+    <!--Кнопка назад и Надпись настройки-->
+    <FrameLayout
+        android:id="@+id/back_and_setting"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+
+        <ImageButton
+            android:id="@+id/ib_backSetting"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:src="@drawable/back"
+            android:background="@android:color/transparent"
+            android:foreground="?attr/selectableItemBackground"
+            app:tint="?attr/colorControlNormal"
+            />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="64dp"
+            android:layout_gravity="center_vertical"
+            android:text="@string/settings"
+            android:textColor="@color/Main_Text_Colors"
+            android:textSize="26sp" />
+    </FrameLayout>
+    <!--Темная тема-->
+    <FrameLayout
+        android:id="@+id/dark_theme"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/layout_height_btn_setting"
+        android:layout_marginTop="24dp"
+        android:padding="@dimen/padding_btn_setting"
+        android:clickable="true"
+        android:foreground="?attr/selectableItemBackground">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:text="Темная тема"
+            android:textColor="@color/Main_Text_Colors"
+            android:textSize="@dimen/text_size_setting" />
+
+        <Switch
+            android:id="@+id/dark_theme_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|center_vertical"
+            android:checked="false"
+            tools:ignore="UseSwitchCompatOrMaterialXml" />
+    </FrameLayout>
+    <!--Поделиться приложением -->
+    <FrameLayout
+        android:id="@+id/share_app_option"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/layout_height_btn_setting"
+        android:padding="@dimen/padding_btn_setting"
+        android:clickable="true"
+        android:foreground="?attr/selectableItemBackground">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:text="Поделиться приложением"
+            android:textSize="@dimen/text_size_setting"
+            android:textColor="@color/Main_Text_Colors" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|center_vertical"
+            android:src="@drawable/ic_share"
+            app:tint="?attr/colorControlNormal" />
+    </FrameLayout>
+    <!--Написать в поддержку(нитик чтоли?) -->
+    <FrameLayout
+        android:id="@+id/heeeelp"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/layout_height_btn_setting"
+        android:padding="@dimen/padding_btn_setting"
+        android:clickable="true"
+        android:foreground="?attr/selectableItemBackground">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:text="Написать в поддрежку"
+            android:textSize="@dimen/text_size_setting"
+            android:textColor="@color/Main_Text_Colors" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|center_vertical"
+            android:src="@drawable/help"
+            app:tint="?attr/colorControlNormal" />
+    </FrameLayout>
+    <!--Пользовательское соглащение(согласны?) -->
+    <FrameLayout
+        android:id="@+id/sogl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/layout_height_btn_setting"
+        android:padding="@dimen/padding_btn_setting"
+        android:clickable="true"
+        android:foreground="?attr/selectableItemBackground">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:text="Пользовательское соглашение"
+            android:textSize="@dimen/text_size_setting"
+            android:textColor="@color/Main_Text_Colors" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|center_vertical"
+            android:src="@drawable/ic_sogl"
+            app:tint="?attr/colorControlNormal" />
+    </FrameLayout>
+
+
+</LinearLayout>
