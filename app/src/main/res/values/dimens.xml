@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="margin_14dp">14dp</dimen>
+    <dimen name="padding_16dp">16dp</dimen>
+    <dimen name="buttun_radius_16dp">16dp</dimen>
+    <dimen name="icon_Padding">8dp</dimen>
+    <dimen name="text_size">22sp</dimen>
+    <dimen name="text_size_setting">16sp</dimen>
+    <dimen name="layout_height_btn_setting">61dp</dimen>
+    <dimen name="padding_btn_setting">10dp</dimen>
+</resources>
