@@ -1,34 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    >
+    android:orientation="vertical">
     <!--Кнопка назад и Надпись настройки-->
     <FrameLayout
         android:id="@+id/back_and_setting"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        >
+        android:orientation="horizontal">
 
         <ImageButton
             android:id="@+id/ib_backSetting"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:src="@drawable/back"
             android:background="@android:color/transparent"
             android:foreground="?attr/selectableItemBackground"
-            app:tint="?attr/colorControlNormal"
-            />
+            android:src="@drawable/ic_back"
+            app:tint="@color/Main_Text_Colors" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="64dp"
             android:layout_gravity="center_vertical"
+            android:layout_marginStart="64dp"
+            android:fontFamily="@font/ys_display_medium"
             android:text="@string/settings"
             android:textColor="@color/Main_Text_Colors"
             android:textSize="26sp" />
@@ -36,20 +34,12 @@
     <!--Темная тема-->
     <FrameLayout
         android:id="@+id/dark_theme"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/layout_height_btn_setting"
-        android:layout_marginTop="24dp"
-        android:padding="@dimen/padding_btn_setting"
-        android:clickable="true"
-        android:foreground="?attr/selectableItemBackground">
+        style="@style/FrameLayout_Styles_InSettings"
+        android:layout_marginTop="24dp">
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:text="@string/tema"
-            android:textColor="@color/Main_Text_Colors"
-            android:textSize="@dimen/text_size_setting" />
+            style="@style/TextStyle_InSetting"
+            android:text="@string/tema" />
 
         <Switch
             android:id="@+id/dark_theme_switch"
@@ -61,76 +51,47 @@
     </FrameLayout>
     <!--Поделиться приложением -->
     <FrameLayout
-        android:id="@+id/share_app_option"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/layout_height_btn_setting"
-        android:padding="@dimen/padding_btn_setting"
-        android:clickable="true"
-        android:foreground="?attr/selectableItemBackground">
+        android:id="@+id/shareAppOption"
+        style="@style/FrameLayout_Styles_InSettings">
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:text="@string/send_app"
-            android:textSize="@dimen/text_size_setting"
-            android:textColor="@color/Main_Text_Colors" />
+            style="@style/TextStyle_InSetting"
+            android:text="@string/send_app" />
 
         <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end|center_vertical"
-            android:src="@drawable/ic_share"
-            app:tint="?attr/colorControlNormal" />
+            style="@style/ImageStyle_InSetting"
+            android:contentDescription="@string/send_app"
+            android:src="@drawable/ic_share" />
     </FrameLayout>
     <!--Написать в поддержку(нитик чтоли?) -->
     <FrameLayout
         android:id="@+id/heeeelp"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/layout_height_btn_setting"
-        android:padding="@dimen/padding_btn_setting"
-        android:clickable="true"
-        android:foreground="?attr/selectableItemBackground">
+        style="@style/FrameLayout_Styles_InSettings">
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:text="@string/help"
-            android:textSize="@dimen/text_size_setting"
-            android:textColor="@color/Main_Text_Colors" />
+            style="@style/TextStyle_InSetting"
+            android:text="@string/help" />
 
         <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end|center_vertical"
-            android:src="@drawable/help"
-            app:tint="?attr/colorControlNormal" />
+            style="@style/ImageStyle_InSetting"
+            android:contentDescription="@string/help"
+            android:src="@drawable/ic_help" />
     </FrameLayout>
+
     <!--Пользовательское соглащение(согласны?) -->
+
     <FrameLayout
         android:id="@+id/sogl"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/layout_height_btn_setting"
-        android:padding="@dimen/padding_btn_setting"
-        android:clickable="true"
-        android:foreground="?attr/selectableItemBackground">
+        style="@style/FrameLayout_Styles_InSettings">
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:text="@string/sogl"
-            android:textSize="@dimen/text_size_setting"
-            android:textColor="@color/Main_Text_Colors" />
+            style="@style/TextStyle_InSetting"
+            android:text="@string/sogl" />
 
         <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end|center_vertical"
-            android:src="@drawable/ic_sogl"
-            app:tint="?attr/colorControlNormal" />
+            style="@style/ImageStyle_InSetting"
+            android:contentDescription="@string/sogl"
+            android:src="@drawable/ic_sogl" />
     </FrameLayout>
-
 
 </LinearLayout>

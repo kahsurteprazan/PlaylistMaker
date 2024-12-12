@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:fitsSystemWindows="true"
+    tools:context=".SearchActivity">
+
+    <FrameLayout
+        android:id="@+id/back_and_search"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:orientation="vertical">
+
+        <ImageButton
+            android:id="@+id/ib_backToMainFromSearch"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent"
+            android:foreground="?attr/selectableItemBackground"
+            android:src="@drawable/ic_back"
+            app:tint="@color/Main_Text_Colors" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="64dp"
+            android:fontFamily="@font/ys_display_medium"
+            android:text="@string/search"
+            android:textColor="@color/Main_Text_Colors"
+            android:textSize="26sp" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:orientation="horizontal"
+        >
+    <EditText
+        android:id="@+id/editText_search"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:textColor="@color/black"
+        android:layout_marginStart="@dimen/padding_16dp"
+        android:layout_marginEnd="@dimen/padding_16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:layout_gravity="center"
+        android:inputType="text"
+        android:hint="@string/search"
+        android:textCursorDrawable="@drawable/custom_cursor"
+        android:cursorVisible="false"
+        android:textColorHint="@color/grey_text"
+        android:textSize="16sp"
+        android:lines="1"
+        android:fontFamily="@font/ys_display_regular"
+        android:drawableStart="@drawable/ic_search_grey"
+        android:paddingStart="12dp"
+        android:drawablePadding="9dp"
+        android:background="@drawable/style_for_et"
+        />
+
+        <ImageView
+            android:id="@+id/clearButton_search"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|center_vertical"
+            android:layout_marginEnd="28dp"
+            android:src="@drawable/ic_clear"
+            android:visibility="gone"
+            android:contentDescription="Очистить текст"
+            />
+    </FrameLayout>
+
+
+
+</LinearLayout>

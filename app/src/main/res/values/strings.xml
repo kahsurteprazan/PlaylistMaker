@@ -6,6 +6,6 @@
     <string name="settings" translatable="false">Настройки</string>
     <string name="tema" translatable="false">Темная тема</string>
     <string name="send_app" translatable="false">Поделиться приложением</string>
-    <string name="help" translatable="false">Написать в поддрежку</string>
+    <string name="help" translatable="false">Написать в поддержку</string>
     <string name="sogl" translatable="false">Пользовательское соглашение</string>
 </resources>
