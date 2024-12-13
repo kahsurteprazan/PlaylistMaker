@@ -1,97 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
-    <!--Кнопка назад и Надпись настройки-->
-    <FrameLayout
-        android:id="@+id/back_and_setting"
+    android:orientation="vertical"
+    >
+
+    <!-- Toolbar -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/settings_toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        app:navigationIcon="@drawable/ic_back"
+        app:title="@string/settings"
+        app:titleTextAppearance="@style/ToolbarTitleStyle"
+        app:titleMarginStart="0dp"
+        />
 
-        <ImageButton
-            android:id="@+id/ib_backSetting"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:background="@android:color/transparent"
-            android:foreground="?attr/selectableItemBackground"
-            android:src="@drawable/ic_back"
-            app:tint="@color/Main_Text_Colors" />
+    <!-- Темная тема -->
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/dark_theme_switch"
+        style="@style/SwitchMaterialInSetting"
+        android:layout_marginTop="24dp"
+        android:text="@string/tema" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginStart="64dp"
-            android:fontFamily="@font/ys_display_medium"
-            android:text="@string/settings"
-            android:textColor="@color/Main_Text_Colors"
-            android:textSize="26sp" />
-    </FrameLayout>
-    <!--Темная тема-->
-    <FrameLayout
-        android:id="@+id/dark_theme"
-        style="@style/FrameLayout_Styles_InSettings"
-        android:layout_marginTop="24dp">
-
-        <TextView
-            style="@style/TextStyle_InSetting"
-            android:text="@string/tema" />
-
-        <Switch
-            android:id="@+id/dark_theme_switch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end|center_vertical"
-            android:checked="false"
-            tools:ignore="UseSwitchCompatOrMaterialXml" />
-    </FrameLayout>
-    <!--Поделиться приложением -->
-    <FrameLayout
+    <!-- Поделиться приложением -->
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/shareAppOption"
-        style="@style/FrameLayout_Styles_InSettings">
+        style="@style/MaterialTextViewInSetting"
+        android:drawableEnd="@drawable/ic_share"
+        android:text="@string/send_app" />
 
-        <TextView
-            style="@style/TextStyle_InSetting"
-            android:text="@string/send_app" />
+    <!-- Написать в поддержку -->
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/helpOption"
+        style="@style/MaterialTextViewInSetting"
+        android:drawableEnd="@drawable/ic_help"
+        android:text="@string/help" />
 
-        <ImageView
-            style="@style/ImageStyle_InSetting"
-            android:contentDescription="@string/send_app"
-            android:src="@drawable/ic_share" />
-    </FrameLayout>
-    <!--Написать в поддержку(нитик чтоли?) -->
-    <FrameLayout
-        android:id="@+id/heeeelp"
-        style="@style/FrameLayout_Styles_InSettings">
-
-        <TextView
-            style="@style/TextStyle_InSetting"
-            android:text="@string/help" />
-
-        <ImageView
-            style="@style/ImageStyle_InSetting"
-            android:contentDescription="@string/help"
-            android:src="@drawable/ic_help" />
-    </FrameLayout>
-
-    <!--Пользовательское соглащение(согласны?) -->
-
-    <FrameLayout
-        android:id="@+id/sogl"
-        style="@style/FrameLayout_Styles_InSettings">
-
-        <TextView
-            style="@style/TextStyle_InSetting"
-            android:text="@string/sogl" />
-
-        <ImageView
-            style="@style/ImageStyle_InSetting"
-            android:contentDescription="@string/sogl"
-            android:src="@drawable/ic_sogl" />
-    </FrameLayout>
+    <!-- Пользовательское соглашение -->
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/agreementOption"
+        style="@style/MaterialTextViewInSetting"
+        android:drawableEnd="@drawable/ic_sogl"
+        android:text="@string/sogl" />
 
 </LinearLayout>

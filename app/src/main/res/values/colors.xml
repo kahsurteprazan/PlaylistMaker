@@ -7,6 +7,9 @@
     <color name="Main_Text_Colors">#FF000000</color>
     <color name="grey_search">#E6E8EB</color>
     <color name="grey_text">#AEAFB4</color>
+    <color name="grey_ic">#AEAFB4</color>
+    <color name="switch_thumb_color">#AEAFB4</color>
+    <color name="switch_track_color">#E6E8EB</color>
 
 
 

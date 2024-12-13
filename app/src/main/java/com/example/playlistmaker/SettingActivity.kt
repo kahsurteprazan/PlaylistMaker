@@ -4,8 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.widget.ImageButton
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.playlistmaker.databinding.ActivitySettingsBinding
 
@@ -22,32 +20,40 @@ class SettingActivity : AppCompatActivity() {
             shareApp()
         }
 
-        binding.heeeelp.setOnClickListener {
+        binding.helpOption.setOnClickListener {
             contactSupport()
         }
 
-        binding.sogl.setOnClickListener {
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://yandex.ru/legal/practicum_offer/")))
+
+        binding.agreementOption.setOnClickListener {
+            startActivity(
+                Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse(getString(R.string.practicum_offer_url))
+                )
+            )
         }
 
 
-        findViewById<ImageButton>(R.id.ib_backSetting).setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
+        binding.settingsToolbar.setOnClickListener {
+            finish()
         }
+
     }
+
     private fun shareApp() {
         val shareIntent = Intent(Intent.ACTION_SEND).apply {
             type = "text/plain"
-            putExtra(Intent.EXTRA_TEXT, "Привет! Я прохожу крутой курс по Android-разработке в Практикуме. Присоединяйся по ссылке: https://practicum.yandex.ru/android-developer/")
+            putExtra(Intent.EXTRA_TEXT, getString(R.string.practicum_share_url))
         }
         startActivity(Intent.createChooser(shareIntent, "Поделиться приложением"))
     }
+
+
     private fun contactSupport() {
-        val recipient = "nunu.27@mail.ru"
-        val subject = "Сообщение разработчикам и разработчицам приложения Playlist Maker"
-        val message = "Спасибо разработчикам и разработчицам за крутое приложение!"
+        val recipient = getString(R.string.support_email)
+        val subject = getString(R.string.support_subject)
+        val message = getString(R.string.support_message)
 
         val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
             data = Uri.parse("mailto:$recipient")
@@ -57,3 +63,5 @@ class SettingActivity : AppCompatActivity() {
         startActivity(emailIntent)
     }
 }
+
+
