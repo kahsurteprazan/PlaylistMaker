@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Btn_MainActivity_Style" parent="Widget.MaterialComponents.Button.UnelevatedButton">
+        <!-- Размеры -->
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">0dp</item>
+        <item name="android:layout_weight">1</item>
+
+        <!-- Цвета -->
+        <item name="android:backgroundTint">@color/white</item>
+        <item name="android:textColor">@color/black</item>
+
+        <!-- Шрифт -->
+        <item name="android:textSize">@dimen/text_size</item>
+        <item name="android:fontFamily">@font/ys_display_medium</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0.01</item>
+
+        <!-- Адаптивные элементы -->
+        <item name="android:foreground">?attr/selectableItemBackground</item>
+
+        <!-- Применение атрибутов для кнопки -->
+        <item name="cornerRadius">@dimen/buttun_radius_16dp</item>
+        <item name="iconGravity">textStart</item>
+        <item name="iconPadding">@dimen/icon_Padding</item>
+        <item name="iconTint">@color/black</item>
+        <!-- Убираем тень -->
+        <item name="android:elevation">0dp</item>
+    </style>
+
+    <style name="ToolbarTitleStyle">
+        <item name="android:textSize">26sp</item>
+        <item name="android:textColor">@color/Main_Text_Colors</item>
+        <item name="android:fontFamily">@font/ys_display_medium</item>
+    </style>
+
+    <!-- Стиль для MaterialTextView (для пунктов меню) -->
+    <style name="MaterialTextViewInSetting">
+        <!-- Размеры -->
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">56dp</item>
+        <item name="android:paddingHorizontal">16dp</item>
+        <item name="android:paddingVertical">20dp</item>
+
+        <!-- Цвета -->
+        <item name="android:textColor">@color/Main_Text_Colors</item>
+        <item name="android:drawableTint">@color/grey_ic</item>
+
+        <!-- Шрифт -->
+        <item name="android:textSize">@dimen/text_size_setting</item>
+        <item name="android:fontFamily">@font/ys_display_regular</item>
+
+        <!-- Эффекты -->
+        <item name="android:foreground">?attr/selectableItemBackground</item>
+
+        <!-- Выравнивание текста и иконки -->
+        <item name="android:gravity">start|center_vertical</item>
+    </style>
+
+    <!-- Стиль для SwitchMaterial -->
+    <style name="SwitchMaterialInSetting">
+        <!-- Размеры -->
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">56dp</item>
+        <item name="android:paddingHorizontal">16dp</item>
+        <item name="android:paddingVertical">20dp</item>
+
+        <!-- Цвета -->
+        <item name="thumbTint">@color/switch_thumb_color</item>
+        <item name="trackTint">@color/switch_track_color</item>
+
+        <!-- Шрифт -->
+        <item name="android:textSize">@dimen/text_size_setting</item>
+        <item name="android:fontFamily">@font/ys_display_regular</item>
+
+        <!-- Выравнивание текста -->
+        <item name="android:gravity">center_vertical</item>
+    </style>
+
+
+
+</resources>

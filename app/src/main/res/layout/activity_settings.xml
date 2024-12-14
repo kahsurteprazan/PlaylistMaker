@@ -1,136 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     >
-    <!--Кнопка назад и Надпись настройки-->
-    <FrameLayout
-        android:id="@+id/back_and_setting"
+
+    <!-- Toolbar -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/settings_toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        >
+        app:navigationIcon="@drawable/ic_back"
+        app:title="@string/settings"
+        app:titleTextAppearance="@style/ToolbarTitleStyle"
+        app:titleMarginStart="0dp"
+        />
 
-        <ImageButton
-            android:id="@+id/ib_backSetting"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:src="@drawable/back"
-            android:background="@android:color/transparent"
-            android:foreground="?attr/selectableItemBackground"
-            app:tint="?attr/colorControlNormal"
-            />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="64dp"
-            android:layout_gravity="center_vertical"
-            android:text="@string/settings"
-            android:textColor="@color/Main_Text_Colors"
-            android:textSize="26sp" />
-    </FrameLayout>
-    <!--Темная тема-->
-    <FrameLayout
-        android:id="@+id/dark_theme"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/layout_height_btn_setting"
+    <!-- Темная тема -->
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/dark_theme_switch"
+        style="@style/SwitchMaterialInSetting"
         android:layout_marginTop="24dp"
-        android:padding="@dimen/padding_btn_setting"
-        android:clickable="true"
-        android:foreground="?attr/selectableItemBackground">
+        android:text="@string/tema" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:text="@string/tema"
-            android:textColor="@color/Main_Text_Colors"
-            android:textSize="@dimen/text_size_setting" />
+    <!-- Поделиться приложением -->
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/shareAppOption"
+        style="@style/MaterialTextViewInSetting"
+        android:drawableEnd="@drawable/ic_share"
+        android:text="@string/send_app" />
 
-        <Switch
-            android:id="@+id/dark_theme_switch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end|center_vertical"
-            android:checked="false"
-            tools:ignore="UseSwitchCompatOrMaterialXml" />
-    </FrameLayout>
-    <!--Поделиться приложением -->
-    <FrameLayout
-        android:id="@+id/share_app_option"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/layout_height_btn_setting"
-        android:padding="@dimen/padding_btn_setting"
-        android:clickable="true"
-        android:foreground="?attr/selectableItemBackground">
+    <!-- Написать в поддержку -->
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/helpOption"
+        style="@style/MaterialTextViewInSetting"
+        android:drawableEnd="@drawable/ic_help"
+        android:text="@string/help" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:text="@string/send_app"
-            android:textSize="@dimen/text_size_setting"
-            android:textColor="@color/Main_Text_Colors" />
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end|center_vertical"
-            android:src="@drawable/ic_share"
-            app:tint="?attr/colorControlNormal" />
-    </FrameLayout>
-    <!--Написать в поддержку(нитик чтоли?) -->
-    <FrameLayout
-        android:id="@+id/heeeelp"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/layout_height_btn_setting"
-        android:padding="@dimen/padding_btn_setting"
-        android:clickable="true"
-        android:foreground="?attr/selectableItemBackground">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:text="@string/help"
-            android:textSize="@dimen/text_size_setting"
-            android:textColor="@color/Main_Text_Colors" />
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end|center_vertical"
-            android:src="@drawable/help"
-            app:tint="?attr/colorControlNormal" />
-    </FrameLayout>
-    <!--Пользовательское соглащение(согласны?) -->
-    <FrameLayout
-        android:id="@+id/sogl"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/layout_height_btn_setting"
-        android:padding="@dimen/padding_btn_setting"
-        android:clickable="true"
-        android:foreground="?attr/selectableItemBackground">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:text="@string/sogl"
-            android:textSize="@dimen/text_size_setting"
-            android:textColor="@color/Main_Text_Colors" />
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end|center_vertical"
-            android:src="@drawable/ic_sogl"
-            app:tint="?attr/colorControlNormal" />
-    </FrameLayout>
-
+    <!-- Пользовательское соглашение -->
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/agreementOption"
+        style="@style/MaterialTextViewInSetting"
+        android:drawableEnd="@drawable/ic_sogl"
+        android:text="@string/sogl" />
 
 </LinearLayout>
