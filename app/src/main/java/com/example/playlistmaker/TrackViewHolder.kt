@@ -1,5 +1,6 @@
 package com.example.playlistmaker
 
+import android.content.res.Resources
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -22,7 +23,12 @@ class TrackViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         Glide.with(itemView)
             .load(track.artworkUrl100)
             .fitCenter()
-            .transform(RoundedCorners(2))
+            .placeholder(R.drawable.placeholder_image)
+            .error(R.drawable.placeholder_image)
+            .transform(RoundedCorners(2.toPx()))
             .into(trackImage)
+    }
+    fun Int.toPx(): Int {
+        return (this * Resources.getSystem().displayMetrics.density).toInt()
     }
 }
