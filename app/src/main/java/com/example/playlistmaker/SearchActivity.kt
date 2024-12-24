@@ -62,7 +62,7 @@ class SearchActivity : AppCompatActivity() {
         recyclerView = binding.recyclerView
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        val trackList = arrayListOf(
+        val trackList = mutableListOf(
             Track(
                 "Smells Like Teen Spirit",
                 "Nirvana",
