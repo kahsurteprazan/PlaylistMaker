@@ -36,7 +36,8 @@
         android:id="@+id/helpOption"
         style="@style/MaterialTextViewInSetting"
         android:drawableEnd="@drawable/ic_help"
-        android:text="@string/help" />
+        android:text="@string/help"
+        />
 
     <!-- Пользовательское соглашение -->
     <com.google.android.material.textview.MaterialTextView
