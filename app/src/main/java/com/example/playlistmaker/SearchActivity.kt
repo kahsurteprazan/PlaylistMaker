@@ -1,40 +1,51 @@
 package com.example.playlistmaker
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.inputmethod.EditorInfo
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.playlistmaker.databinding.ActivitySearchBinding
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import java.io.IOException
 
 class SearchActivity : AppCompatActivity() {
+
+    private val itunesBaseUrl = "https://itunes.apple.com"
+    private val retrofit = Retrofit.Builder()
+        .baseUrl(itunesBaseUrl)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+    private val itunesService = retrofit.create(ItunesApi::class.java)
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var trackAdapter: TrackAdapter
     private lateinit var binding: ActivitySearchBinding
 
-    // Переменная для сохранения текста
+    private var tracks: List<Track> = emptyList()
     private var searchQuery: String? = null
 
-    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         binding = ActivitySearchBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Восстановление текста из savedInstanceState
         searchQuery = savedInstanceState?.getString(KEY_SEARCH_QUERY)
         binding.editTextSearch.setText(searchQuery)
 
+        // Обработчик ввода текста
         val editText = binding.editTextSearch
         val clearButton = binding.clearButtonSearch
 
-        // Реализация очистить текст
         editText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
@@ -46,124 +57,111 @@ class SearchActivity : AppCompatActivity() {
             override fun afterTextChanged(s: Editable?) {}
         })
 
+        // Очистка текста
         clearButton.setOnClickListener {
             editText.text.clear()
+            trackAdapter.submitList(emptyList())
         }
 
-        // Полоска текста
-        editText.setOnFocusChangeListener { _, hasFocus ->
-            editText.isCursorVisible = hasFocus
+        // Поиск при нажатии на кнопку Done
+        editText.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                performSearch(searchQuery ?: "")
+                true
+            }
+            false
         }
 
         // Кнопка назад
         binding.backAndSearch.setOnClickListener {
             finish()
         }
+
+        // Инициализация RecyclerView
         recyclerView = binding.recyclerView
         recyclerView.layoutManager = LinearLayoutManager(this)
+        trackAdapter = TrackAdapter(tracks)
+        recyclerView.adapter = trackAdapter
 
-        val trackList = mutableListOf(
-            Track(
-                "Smells Like Teen Spirit",
-                "Nirvana",
-                "5:01",
-                "https://is5-ssl.mzstatic.com/image/thumb/Music115/v4/7b/58/c2/7b58c21a-2b51-2bb2-e59a-9bb9b96ad8c3/00602567924166.rgb.jpg/100x100bb.jpg"
-            ),
-            Track(
-                "Billie Jean",
-                "Michael Jackson",
-                "4:35",
-                "https://is5-ssl.mzstatic.com/image/thumb/Music125/v4/3d/9d/38/3d9d3811-71f0-3a0e-1ada-3004e56ff852/827969428726.jpg/100x100bb.jpg"
-            ),
-            Track(
-                "Stayin' Alive",
-                "Bee Gees",
-                "4:10",
-                "https://is4-ssl.mzstatic.com/image/thumb/Music115/v4/1f/80/1f/1f801fc1-8c0f-ea3e-d3e5-387c6619619e/16UMGIM86640.rgb.jpg/100x100bb.jpg"
-            ),
-            Track(
-                "Whole Lotta Love",
-                "Led Zeppelin",
-                "5:33",
-                "https://is2-ssl.mzstatic.com/image/thumb/Music62/v4/7e/17/e3/7e17e33f-2efa-2a36-e916-7f808576cf6b/mzm.fyigqcbs.jpg/100x100bb.jpg"
-            ),
-            Track(
-                "Sweet Child O'Mine",
-                "Guns N' Roses",
-                "5:03",
-                "https://is5-ssl.mzstatic.com/image/thumb/Music125/v4/a0/4d/c4/a04dc484-03cc-02aa-fa82-5334fcb4bc16/18UMGIM24878.rgb.jpg/100x100bb.jpg"
-            ),
-            Track(
-                "Smells Like Teen Spirit",
-                "Nirvana",
-                "5:01",
-                "https://is5-ssl.mzstatic.com/image/thumb/Music115/v4/7b/58/c2/7b58c21a-2b51-2bb2-e59a-9bb9b96ad8c3/00602567924166.rgb.jpg/100x100bb.jpg"
-            ),
-            Track(
-                "Billie Jean",
-                "Michael Jackson",
-                "4:35",
-                "https://is5-ssl.mzstatic.com/image/thumb/Music125/v4/3d/9d/38/3d9d3811-71f0-3a0e-1ada-3004e56ff852/827969428726.jpg/100x100bb.jpg"
-            ),
-            Track(
-                "Stayin' Alive",
-                "Bee Gees",
-                "4:10",
-                "https://is4-ssl.mzstatic.com/image/thumb/Music115/v4/1f/80/1f/1f801fc1-8c0f-ea3e-d3e5-387c6619619e/16UMGIM86640.rgb.jpg/100x100bb.jpg"
-            ),
-            Track(
-                "Whole Lotta Love",
-                "Led Zeppelin",
-                "5:33",
-                "https://is2-ssl.mzstatic.com/image/thumb/Music62/v4/7e/17/e3/7e17e33f-2efa-2a36-e916-7f808576cf6b/mzm.fyigqcbs.jpg/100x100bb.jpg"
-            ),
-            Track(
-                "Sweet Child O'Mine",
-                "Guns N' Roses",
-                "5:03",
-                "https://is5-ssl.mzstatic.com/image/thumb/Music125/v4/a0/4d/c4/a04dc484-03cc-02aa-fa82-5334fcb4bc16/18UMGIM24878.rgb.jpg/100x100bb.jpg"
-            ),
-            Track(
-                "Smells Like Teen Spirit",
-                "Nirvana",
-                "5:01",
-                "https://is5-ssl.mzstatic.com/image/thumb/Music115/v4/7b/58/c2/7b58c21a-2b51-2bb2-e59a-9bb9b96ad8c3/00602567924166.rgb.jpg/100x100bb.jpg"
-            ),
-            Track(
-                "Billie Jean",
-                "Michael Jackson",
-                "4:35",
-                "https://is5-ssl.mzstatic.com/image/thumb/Music125/v4/3d/9d/38/3d9d3811-71f0-3a0e-1ada-3004e56ff852/827969428726.jpg/100x100bb.jpg"
-            ),
-            Track(
-                "Stayin' Alive",
-                "Bee Gees",
-                "4:10",
-                "https://is4-ssl.mzstatic.com/image/thumb/Music115/v4/1f/80/1f/1f801fc1-8c0f-ea3e-d3e5-387c6619619e/16UMGIM86640.rgb.jpg/100x100bb.jpg"
-            ),
-            Track(
-                "Whole Lotta Love",
-                "Led Zeppelin",
-                "5:33",
-                "https://is2-ssl.mzstatic.com/image/thumb/Music62/v4/7e/17/e3/7e17e33f-2efa-2a36-e916-7f808576cf6b/mzm.fyigqcbs.jpg/100x100bb.jpg"
-            ),
-            Track(
-                "Sweet Child O'Mine",
-                "Guns N' Roses",
-                "5:03",
-                "https://is5-ssl.mzstatic.com/image/thumb/Music125/v4/a0/4d/c4/a04dc484-03cc-02aa-fa82-5334fcb4bc16/18UMGIM24878.rgb.jpg/100x100bb.jpg"
-            )
-        )
-
-        recyclerView.adapter = TrackAdapter(trackList)
-
+        // Обработчик кнопки "Обновить"
+        binding.refreshButton.setOnClickListener {
+            retrySearch() // Повторить поиск
+        }
     }
 
+    // Выполнение поиска
+    private fun performSearch(query: String) {
+        // Очистить RecyclerView перед запросом
+        trackAdapter.submitList(emptyList())
+
+        // Выполнить запрос
+        itunesService.search(query).enqueue(object : Callback<SearchResponse> {
+            override fun onResponse(call: Call<SearchResponse>, response: Response<SearchResponse>) {
+                if (response.isSuccessful) {
+                    val searchResponse = response.body()
+                    if (searchResponse != null) {
+                        handleSearchResults(searchResponse)
+                    } else {
+                        showPlaceholderNoResults()
+                    }
+                } else {
+                    showPlaceholderNoResults() // Ошибка ответа от сервера
+                }
+            }
+
+            override fun onFailure(call: Call<SearchResponse>, t: Throwable) {
+                if (t is IOException) {
+                    showPlaceholderNoInternet()
+                } else {
+                    showPlaceholderNoResults() // Используем заглушку "Нет результатов" для любых других ошибок
+                }
+            }
+        })
+    }
+
+    private fun handleSearchResults(response: SearchResponse) {
+        if (response.results.isEmpty()) {
+            showPlaceholderNoResults()
+        } else {
+            trackAdapter.submitList(response.results)
+            showResults() // Показываем список
+        }
+    }
+
+    private fun showPlaceholderNoResults() {
+        binding.recyclerView.isVisible = false
+        binding.placeholderNoResults.isVisible = true
+        binding.placeholderNoInternet.isVisible = false
+        binding.refreshButton.isVisible = false
+    }
+
+    private fun showPlaceholderNoInternet() {
+        binding.recyclerView.isVisible = false
+        binding.placeholderNoResults.isVisible = false
+        binding.placeholderNoInternet.isVisible = true
+        binding.refreshButton.isVisible = true
+    }
+
+    private fun showResults() {
+        binding.recyclerView.isVisible = true
+        binding.placeholderNoResults.isVisible = false
+        binding.placeholderNoInternet.isVisible = false
+    }
+
+
+    // Повторный запрос при нажатии кнопки "Обновить"
+    private fun retrySearch() {
+        binding.refreshButton.isVisible = false // Скрыть кнопку обновления
+        performSearch(binding.editTextSearch.text.toString()) // Повторить поиск
+    }
+
+    // Сохранение состояния
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putString(KEY_SEARCH_QUERY, searchQuery)
     }
 
+    // Восстановление состояния
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         searchQuery = savedInstanceState.getString(KEY_SEARCH_QUERY)
@@ -173,6 +171,5 @@ class SearchActivity : AppCompatActivity() {
     companion object {
         private const val KEY_SEARCH_QUERY = "SEARCH_QUERY"
     }
-
-
 }
+
