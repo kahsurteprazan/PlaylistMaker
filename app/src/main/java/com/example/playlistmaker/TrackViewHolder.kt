@@ -18,7 +18,7 @@ class TrackViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     fun bind(track: Track) {
         trackName.text = track.trackName
         artistName.text = track.artistName
-        trackTime.text = track.trackTime
+        trackTime.text = formatTrackTime(track.trackTimeMillis)
 
         Glide.with(itemView)
             .load(track.artworkUrl100)
@@ -30,5 +30,10 @@ class TrackViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     }
     fun Int.toPx(): Int {
         return (this * Resources.getSystem().displayMetrics.density).toInt()
+    }
+    private fun formatTrackTime(timeMillis: Long): String {
+        val minutes = timeMillis / 1000 / 60
+        val seconds = (timeMillis / 1000) % 60
+        return String.format("%02d:%02d", minutes, seconds)
     }
 }

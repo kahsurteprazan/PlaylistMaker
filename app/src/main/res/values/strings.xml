@@ -13,4 +13,7 @@
     <string name="support_email" translatable="false">nunu.27@mail.ru</string>
     <string name="support_subject" translatable="false">Сообщение разработчикам и разработчицам приложения Playlist Maker</string>
     <string name="support_message" translatable="false">Спасибо разработчикам и разработчицам за крутое приложение!</string>
+    <string name="no_results" translatable="false">Ничего не нашлось</string>
+    <string name="no_internet" translatable="false">Проблема со связью\n\nЗагрузка не удалась. Проверте подключение к интеренту</string>
+    <string name="refresh" translatable="false">Обновить</string>
 </resources>
