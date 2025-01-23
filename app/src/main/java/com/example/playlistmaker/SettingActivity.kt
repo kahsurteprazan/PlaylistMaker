@@ -16,6 +16,13 @@ class SettingActivity : AppCompatActivity() {
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val app = applicationContext as App
+        binding.themeSwitcher.isChecked = app.darkTheme
+
+        binding.themeSwitcher.setOnCheckedChangeListener { _, isChecked ->
+            app.switchTheme(isChecked)
+        }
+
         binding.shareAppOption.setOnClickListener {
             shareApp()
         }

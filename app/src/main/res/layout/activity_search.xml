@@ -39,15 +39,16 @@
             android:drawablePadding="9dp"
             android:fontFamily="@font/ys_display_regular"
             android:hint="@string/search"
+            android:focusable="true"
+            android:imeOptions="actionDone"
             android:inputType="text"
             android:lines="1"
             android:paddingStart="12dp"
+            android:singleLine="true"
             android:textColor="@color/black"
             android:textColorHint="@color/grey_text"
             android:textCursorDrawable="@drawable/custom_cursor"
-            android:textSize="16sp"
-            android:imeOptions="actionDone"
-            android:singleLine="true"/>
+            android:textSize="16sp" />
 
         <ImageView
             android:id="@+id/clearButton_search"
@@ -75,25 +76,24 @@
             android:id="@+id/placeholder_no_results"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="102dp"
             android:gravity="center"
             android:orientation="vertical"
-            android:layout_marginTop="102dp"
-            android:visibility="gone"
-            >
+            android:visibility="gone">
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_nothingfind"
-                android:layout_marginBottom="16dp"/>
+                android:layout_marginBottom="16dp"
+                android:src="@drawable/ic_nothingfind" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/no_results"
                 android:fontFamily="@font/ys_display_medium"
-                android:textSize="19sp"
-                android:textColor="@color/search_ic_and_text" />
+                android:text="@string/no_results"
+                android:textColor="@color/search_ic_and_text"
+                android:textSize="19sp" />
 
         </LinearLayout>
 
@@ -102,9 +102,9 @@
             android:id="@+id/placeholder_no_internet"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="102dp"
             android:gravity="center"
             android:orientation="vertical"
-            android:layout_marginTop="102dp"
             android:visibility="gone">
 
             <ImageView
@@ -115,12 +115,12 @@
             <TextView
                 android:layout_width="312dp"
                 android:layout_height="wrap_content"
-                android:gravity="center"
                 android:layout_marginTop="16dp"
-                android:text="@string/no_internet"
                 android:fontFamily="@font/ys_display_medium"
-                android:textSize="19sp"
-                android:textColor="@color/search_ic_and_text" />
+                android:gravity="center"
+                android:text="@string/no_internet"
+                android:textColor="@color/search_ic_and_text"
+                android:textSize="19sp" />
 
             <Button
                 android:id="@+id/refresh_button"
@@ -128,15 +128,59 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:background="@drawable/rounder_button_search"
-                app:backgroundTint="@null"
-                android:text="@string/refresh"
                 android:fontFamily="@font/ys_display_medium"
-                android:textSize="14sp"
+                android:text="@string/refresh"
                 android:textAllCaps="false"
-                android:textColor="@color/text_white_black" />
+                android:textColor="@color/text_white_black"
+                android:textSize="14sp"
+                app:backgroundTint="@null" />
 
         </LinearLayout>
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/historySearch"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="24dp"
+            android:fontFamily="@font/ys_display_medium"
+            android:gravity="center"
+            android:text="@string/text_searchHistory"
+            android:textColor="@color/text_black_white"
+            android:textSize="19sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/searchHistoryList"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toBottomOf="@+id/textView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/clearButtonSearchHistory"
+            app:layout_constraintHeight_max="550dp" />
+        <Button
+            android:id="@+id/clearButtonSearchHistory"
+            style="@style/Buttons"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="@color/text_black_white"
+            android:fontFamily="@font/ys_display_medium"
+            android:text="@string/clear_button_searchHistory"
+            android:textAllCaps="false"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/searchHistoryList" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
     </FrameLayout>
 
 </LinearLayout>

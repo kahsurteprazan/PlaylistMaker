@@ -1,8 +1,10 @@
 package com.example.playlistmaker
 
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.View
 import android.view.inputmethod.EditorInfo
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -17,7 +19,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.IOException
 
-class SearchActivity : AppCompatActivity() {
+class SearchActivity : AppCompatActivity(), OnTrackClickListener {
 
     private val itunesBaseUrl = "https://itunes.apple.com"
     private val retrofit = Retrofit.Builder()
@@ -25,7 +27,9 @@ class SearchActivity : AppCompatActivity() {
         .addConverterFactory(GsonConverterFactory.create())
         .build()
     private val itunesService = retrofit.create(ItunesApi::class.java)
-
+    private lateinit var searchHistory: SearchHistory
+    private lateinit var historyAdapter: TrackAdapter
+    private lateinit var recyclerViewHistory: RecyclerView
     private lateinit var recyclerView: RecyclerView
     private lateinit var trackAdapter: TrackAdapter
     private lateinit var binding: ActivitySearchBinding
@@ -42,9 +46,37 @@ class SearchActivity : AppCompatActivity() {
         searchQuery = savedInstanceState?.getString(KEY_SEARCH_QUERY)
         binding.editTextSearch.setText(searchQuery)
 
-        // Обработчик ввода текста
         val editText = binding.editTextSearch
         val clearButton = binding.clearButtonSearch
+
+
+
+        // Инциализация ШерПрефернс
+        val sharedPreferences = getSharedPreferences("search_history", MODE_PRIVATE)
+        searchHistory = SearchHistory(sharedPreferences)
+
+        // Инициализация RecyclerViewHistory Истории
+        recyclerViewHistory = binding.searchHistoryList
+        recyclerViewHistory.layoutManager = LinearLayoutManager(this)
+        historyAdapter = TrackAdapter(emptyList(), searchHistory, this) // История
+        recyclerViewHistory.adapter = historyAdapter
+
+        val history = searchHistory.getHistory()
+        historyAdapter.submitList(history)
+        binding.historySearch.visibility = if (history.isNotEmpty()) View.VISIBLE else View.GONE
+
+        binding.clearButtonSearchHistory.setOnClickListener {
+            searchHistory.clearHistory()
+            binding.historySearch.visibility = View.GONE
+        }
+
+        editText.setOnFocusChangeListener { _, hasFocus ->
+            binding.historySearch.visibility = if (hasFocus && searchHistory.getHistory().isNotEmpty() && editText.text.isNullOrEmpty()) {
+                View.VISIBLE
+            } else {
+                View.GONE
+            }
+        }
 
         editText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -52,24 +84,41 @@ class SearchActivity : AppCompatActivity() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 clearButton.isVisible = !s.isNullOrEmpty()
                 searchQuery = s?.toString()
+
+                binding.editTextSearch.imeOptions = if (s.isNullOrEmpty()) {
+                    // Убираем фокус и скрываем кнопку Done
+                    EditorInfo.IME_ACTION_NONE
+                } else {
+                    // Включаем кнопку Done
+                    EditorInfo.IME_ACTION_DONE
+                }
+
+                binding.historySearch.visibility = if (editText.hasFocus() && searchHistory.getHistory().isNotEmpty() && s.isNullOrEmpty()) {
+                    View.VISIBLE
+                } else {
+                    View.GONE
+                }
             }
 
             override fun afterTextChanged(s: Editable?) {}
         })
-
         // Очистка текста
         clearButton.setOnClickListener {
             editText.text.clear()
+            binding.placeholderNoResults.isVisible = false
+            binding.placeholderNoInternet.isVisible = false
+            binding.refreshButton.isVisible = false
             trackAdapter.submitList(emptyList())
         }
 
         // Поиск при нажатии на кнопку Done
-        editText.setOnEditorActionListener { _, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_DONE) {
+        binding.editTextSearch.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_DONE && !searchQuery.isNullOrEmpty()) {
                 performSearch(searchQuery ?: "")
                 true
+            } else {
+                false
             }
-            false
         }
 
         // Кнопка назад
@@ -77,15 +126,15 @@ class SearchActivity : AppCompatActivity() {
             finish()
         }
 
-        // Инициализация RecyclerView
+        // Инициализация RecyclerView ПОИСКА
         recyclerView = binding.recyclerView
         recyclerView.layoutManager = LinearLayoutManager(this)
-        trackAdapter = TrackAdapter(tracks)
+        trackAdapter = TrackAdapter(tracks, searchHistory, this)
         recyclerView.adapter = trackAdapter
 
         // Обработчик кнопки "Обновить"
         binding.refreshButton.setOnClickListener {
-            retrySearch() // Повторить поиск
+            retrySearch()
         }
     }
 
@@ -101,19 +150,17 @@ class SearchActivity : AppCompatActivity() {
                     val searchResponse = response.body()
                     if (searchResponse != null) {
                         handleSearchResults(searchResponse)
-                    } else {
-                        showPlaceholderNoResults()
                     }
                 } else {
-                    showPlaceholderNoResults() // Ошибка ответа от сервера
+                    showPlaceholderNoResults() // Заглушка "Нет результатов"
                 }
             }
 
             override fun onFailure(call: Call<SearchResponse>, t: Throwable) {
                 if (t is IOException) {
-                    showPlaceholderNoInternet()
+                    showPlaceholderNoInternet() // Заглушка "Нет инета"
                 } else {
-                    showPlaceholderNoResults() // Используем заглушку "Нет результатов" для любых других ошибок
+                    showPlaceholderNoResults() // Заглушка "Нет результатов"
                 }
             }
         })
@@ -124,7 +171,7 @@ class SearchActivity : AppCompatActivity() {
             showPlaceholderNoResults()
         } else {
             trackAdapter.submitList(response.results)
-            showResults() // Показываем список
+            showResults()
         }
     }
 
@@ -171,5 +218,18 @@ class SearchActivity : AppCompatActivity() {
     companion object {
         private const val KEY_SEARCH_QUERY = "SEARCH_QUERY"
     }
+
+    // Eзжи клик
+
+    override fun onTrackClick(track: Track) {
+        searchHistory.addTrack(track)
+        searchHistory.saveHistory(searchHistory.getHistory())
+
+        val updatedHistory = searchHistory.getHistory()
+        (recyclerViewHistory.adapter as TrackAdapter).submitList(updatedHistory)
+
+    }
 }
+
+
 

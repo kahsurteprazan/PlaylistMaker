@@ -78,6 +78,10 @@
         <item name="android:gravity">center_vertical</item>
     </style>
 
+    <style name="Buttons">
+        <item name="cornerRadius">54dp</item>
+    </style>
+
 
 
 </resources>
