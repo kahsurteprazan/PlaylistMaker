@@ -23,11 +23,15 @@ class App : Application() {
 
     fun switchTheme(isChecked: Boolean) {
         darkTheme = isChecked
-        sharedPreferences.edit().putBoolean("dark_theme", darkTheme).apply()
+        sharedPreferences.edit().putBoolean(DARK_THEME, darkTheme).apply()
 
         AppCompatDelegate.setDefaultNightMode(
             if (darkTheme) AppCompatDelegate.MODE_NIGHT_YES
             else AppCompatDelegate.MODE_NIGHT_NO
         )
+    }
+
+    companion object {
+        private const val DARK_THEME = "dark_theme"
     }
 }
