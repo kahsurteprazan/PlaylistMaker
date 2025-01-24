@@ -8,8 +8,8 @@ import androidx.recyclerview.widget.RecyclerView
 class TrackAdapter(
     private var tracks: List<Track>,
     private val searchHistory: SearchHistory,
-    private val onItemClickListener: OnTrackClickListener
-) : RecyclerView.Adapter<TrackViewHolder>() {
+    private val onItemClickListener: (Track) -> Unit
+)  : RecyclerView.Adapter<TrackViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TrackViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -26,7 +26,7 @@ class TrackAdapter(
             searchHistory.addTrack(item)
             Log.d("TrackAdapter", "History after add: ${searchHistory.getHistory()}")
             searchHistory.saveHistory(searchHistory.getHistory())
-            onItemClickListener.onTrackClick(item)
+            onItemClickListener(item)
             notifyDataSetChanged()
         }
     }
