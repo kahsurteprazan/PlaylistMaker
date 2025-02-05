@@ -60,7 +60,6 @@ class SearchActivity : AppCompatActivity(){
         historyAdapter = TrackAdapter(emptyList(), searchHistory) { track ->
             searchHistory.addTrack(track)
             searchHistory.saveHistory(searchHistory.getHistory())
-
             val updatedHistory = searchHistory.getHistory()
             (recyclerViewHistory.adapter as TrackAdapter).submitList(updatedHistory)
         }
