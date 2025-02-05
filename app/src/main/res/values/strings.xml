@@ -16,4 +16,6 @@
     <string name="no_results" translatable="false">Ничего не нашлось</string>
     <string name="no_internet" translatable="false">Проблема со связью\n\nЗагрузка не удалась. Проверте подключение к интеренту</string>
     <string name="refresh" translatable="false">Обновить</string>
+    <string name="clear_button_searchHistory" translatable="false">Очистить историю</string>
+    <string name="text_searchHistory" translatable="false">Вы искали</string>
 </resources>
