@@ -10,6 +10,8 @@ import com.example.playlistmaker.databinding.ActivityAudioPlayerBinding
 import java.text.SimpleDateFormat
 import java.util.Locale
 
+const val TRACK_KEY = "track"
+
 class AudioPlayerActivity: AppCompatActivity() {
     private lateinit var binding: ActivityAudioPlayerBinding
 
@@ -18,11 +20,12 @@ class AudioPlayerActivity: AppCompatActivity() {
         binding = ActivityAudioPlayerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+
         val track: Track? = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            intent.getParcelableExtra("track", Track::class.java)
+            intent.getParcelableExtra(TRACK_KEY, Track::class.java)
         } else {
             @Suppress("DEPRECATION")
-            intent.getParcelableExtra("track")
+            intent.getParcelableExtra(TRACK_KEY)
         }
 
 
@@ -38,7 +41,7 @@ class AudioPlayerActivity: AppCompatActivity() {
                 binding.textViewLeftAlbum.isGone = true
             }
 
-            binding.textViewRightYear.text = formatYear(track.releaseDate)
+            binding.textViewRightYear.text = formatYearFromDate(track.releaseDate)
             binding.textViewRightGenre.text = track.primaryGenreName
             binding.textViewRightCountry.text = track.country
 
@@ -64,16 +67,13 @@ class AudioPlayerActivity: AppCompatActivity() {
         val seconds = (timeMillis / 1000) % 60
         return String.format("%02d:%02d", minutes, seconds)
     }
-    fun formatYear(dateString: String): String {
-        return try {
-            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
-            val date = inputFormat.parse(dateString)
-            val yearFormat = SimpleDateFormat("yyyy", Locale.getDefault())
-            yearFormat.format(date ?: return "Invalid date")
-        } catch (e: Exception) {
-            "Error parsing date"
-        }
+    fun formatYearFromDate(dateString: String): String? {
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
+        val date = inputFormat.parse(dateString) ?: return null
+        val yearFormat = SimpleDateFormat("yyyy", Locale.getDefault())
+        return yearFormat.format(date)
     }
+
     fun Int.toPx(): Int {
         return (this * Resources.getSystem().displayMetrics.density).toInt()
     }
