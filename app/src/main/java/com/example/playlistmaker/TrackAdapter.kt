@@ -1,5 +1,6 @@
 package com.example.playlistmaker
 
+import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -27,9 +28,15 @@ class TrackAdapter(
             Log.d("TrackAdapter", "History after add: ${searchHistory.getHistory()}")
             searchHistory.saveHistory(searchHistory.getHistory())
             onItemClickListener(item)
+
+            val intent = Intent(holder.itemView.context, AudioPlayerActivity::class.java)
+            intent.putExtra("track", item)
+            holder.itemView.context.startActivity(intent)
+
             notifyDataSetChanged()
         }
     }
+
 
     override fun getItemCount(): Int = tracks.size
 

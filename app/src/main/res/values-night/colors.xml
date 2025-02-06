@@ -11,5 +11,7 @@
     <color name="search_ic_and_text">#FFFFFFFF</color>
     <color name="text_white_black">#1A1B22</color>
     <color name="text_black_white">#FFFFFFFF</color>
+    <color name="text_grey">#AEAFB4</color>
+    <color name="back_ic_audio_player">#FFFFFF</color>
 
 </resources>
