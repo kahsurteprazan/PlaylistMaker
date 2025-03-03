@@ -13,6 +13,8 @@
     <color name="search_ic_and_text">#1A1B22</color>
     <color name="text_white_black">#FFFFFFFF</color>
     <color name="text_black_white">#1A1B22</color>
+    <color name="text_grey">#AEAFB4</color>
+    <color name="back_ic_audio_player">#1A1B22</color>
 
 
 
