@@ -1,6 +1,8 @@
 package com.example.playlistmaker
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
@@ -19,7 +21,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.io.IOException
 
 class SearchActivity : AppCompatActivity(){
-
+    private val searchHandler = Handler(Looper.getMainLooper())
     private val itunesBaseUrl = "https://itunes.apple.com"
     private val retrofit = Retrofit.Builder()
         .baseUrl(itunesBaseUrl)
@@ -60,9 +62,9 @@ class SearchActivity : AppCompatActivity(){
         historyAdapter = TrackAdapter(emptyList(), searchHistory) { track ->
             searchHistory.addTrack(track)
             searchHistory.saveHistory(searchHistory.getHistory())
-            val updatedHistory = searchHistory.getHistory()
-            (recyclerViewHistory.adapter as TrackAdapter).submitList(updatedHistory)
+            historyAdapter.submitList(searchHistory.getHistory())
         }
+
         recyclerViewHistory.adapter = historyAdapter
 
         val history = searchHistory.getHistory()
@@ -90,21 +92,23 @@ class SearchActivity : AppCompatActivity(){
 
                 clearButton.isVisible = !isQueryEmpty
 
-                binding.editTextSearch.imeOptions = if (isQueryEmpty) {
-                    EditorInfo.IME_ACTION_NONE
-                } else {
-                    EditorInfo.IME_ACTION_DONE
-                }
+                // Если пользователь начал вводить текст — показываем ProgressBar
+                binding.progressBar.isVisible = !isQueryEmpty
+                binding.recyclerView.isVisible = false
 
-                val showHistory = editText.hasFocus() &&
-                        searchHistory.getHistory().isNotEmpty() &&
-                        isQueryEmpty
+                searchHandler.removeCallbacksAndMessages(null)
+                searchHandler.postDelayed({
+                    if (!s.isNullOrEmpty()) {
+                        performSearch(s.toString())
+                    } else {
+                        binding.progressBar.isVisible = false
+                    }
+                }, SEARCH_DELAY)
+
+                val showHistory = editText.hasFocus() && searchHistory.getHistory().isNotEmpty() && isQueryEmpty
                 binding.historySearch.isVisible = showHistory
-
-                binding.recyclerView.isVisible = !isQueryEmpty && trackAdapter.itemCount < 0
-
-                binding.placeholderNoResults.isVisible = !showHistory && isQueryEmpty
             }
+
 
             override fun afterTextChanged(s: Editable?) {}
         })
@@ -151,33 +155,43 @@ class SearchActivity : AppCompatActivity(){
         }
     }
 
+
     // Выполнение поиска
     private fun performSearch(query: String) {
+        // Показываем индикатор загрузки
+        binding.progressBar.isVisible = true
+        binding.recyclerView.isVisible = false
+        binding.placeholderNoResults.isVisible = false
+        binding.placeholderNoInternet.isVisible = false
 
         trackAdapter.submitList(emptyList())
 
-        // Выполнить запрос
         itunesService.search(query).enqueue(object : Callback<SearchResponse> {
             override fun onResponse(call: Call<SearchResponse>, response: Response<SearchResponse>) {
+                binding.progressBar.isVisible = false
+
                 if (response.isSuccessful) {
                     val searchResponse = response.body()
                     if (searchResponse != null) {
                         handleSearchResults(searchResponse)
                     }
                 } else {
-                    showPlaceholderNoResults() // Заглушка "Нет результатов"
+                    showPlaceholderNoResults()
                 }
             }
 
             override fun onFailure(call: Call<SearchResponse>, t: Throwable) {
+                binding.progressBar.isVisible = false
+
                 if (t is IOException) {
-                    showPlaceholderNoInternet() // Заглушка "Нет инета"
+                    showPlaceholderNoInternet()
                 } else {
-                    showPlaceholderNoResults() // Заглушка "Нет результатов"
+                    showPlaceholderNoResults()
                 }
             }
         })
     }
+
 
     private fun handleSearchResults(response: SearchResponse) {
         if (response.results.isEmpty()) {
@@ -230,6 +244,7 @@ class SearchActivity : AppCompatActivity(){
 
     companion object {
         private const val KEY_SEARCH_QUERY = "SEARCH_QUERY"
+        private const val SEARCH_DELAY = 2000L
     }
 }
 
