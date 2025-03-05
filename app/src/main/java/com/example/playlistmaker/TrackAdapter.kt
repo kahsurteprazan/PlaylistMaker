@@ -28,17 +28,13 @@ class TrackAdapter(
         holder.bind(item, onItemClickListener)
 
         holder.itemView.setOnClickListener {
-            Log.d("TrackAdapter", "Clicked on track: ${item.trackId}")
             searchHistory.addTrack(item)
-            Log.d("TrackAdapter", "History after add: ${searchHistory.getHistory()}")
             searchHistory.saveHistory(searchHistory.getHistory())
-            onItemClickListener(item)
             if (clickDebounce()) {
                 val intent = Intent(holder.itemView.context, AudioPlayerActivity::class.java)
                 intent.putExtra("track", item)
                 holder.itemView.context.startActivity(intent)
             }
-            notifyDataSetChanged()
         }
     }
 

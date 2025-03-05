@@ -80,6 +80,7 @@ class SearchActivity : AppCompatActivity(){
             binding.historySearch.isVisible = hasFocus &&
                     searchHistory.getHistory().isNotEmpty() &&
                     editText.text.isNullOrEmpty()
+            editText.isCursorVisible = hasFocus
         }
 
 
@@ -92,13 +93,13 @@ class SearchActivity : AppCompatActivity(){
 
                 clearButton.isVisible = !isQueryEmpty
 
-                // Если пользователь начал вводить текст — показываем ProgressBar
-                binding.progressBar.isVisible = !isQueryEmpty
+
                 binding.recyclerView.isVisible = false
 
                 searchHandler.removeCallbacksAndMessages(null)
                 searchHandler.postDelayed({
                     if (!s.isNullOrEmpty()) {
+                        binding.progressBar.isVisible = true
                         performSearch(s.toString())
                     } else {
                         binding.progressBar.isVisible = false

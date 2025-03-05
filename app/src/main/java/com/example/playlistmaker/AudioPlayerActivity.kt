@@ -7,6 +7,7 @@ import android.os.Handler
 import android.os.Looper
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isGone
 import com.bumptech.glide.Glide
@@ -14,8 +15,6 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.example.playlistmaker.databinding.ActivityAudioPlayerBinding
 import java.text.SimpleDateFormat
 import java.util.Locale
-
-
 
 
 class AudioPlayerActivity : AppCompatActivity() {
@@ -34,16 +33,19 @@ class AudioPlayerActivity : AppCompatActivity() {
     private lateinit var timerTextView: TextView
     private lateinit var play: ImageButton
     private var playerState = STATE_DEFAULT
-    private var url =
-        "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview112/v4/ac/c7/d1/acc7d13f-6634-495f-caf6-491eccb505e8/mzaf_4002676889906514534.plus.aac.p.m4a"
+    private var url: String? = ""
     private val updateRunnable = object : Runnable {
         override fun run() {
             if (mediaPlayer.isPlaying) {
-                timerTextView.text = SimpleDateFormat("m:ss", Locale.getDefault()).format(mediaPlayer.currentPosition)
+                timerTextView.text = SimpleDateFormat(
+                    "m:ss",
+                    Locale.getDefault()
+                ).format(mediaPlayer.currentPosition)
                 handler.postDelayed(this, 300)
             }
         }
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAudioPlayerBinding.inflate(layoutInflater)
@@ -60,7 +62,6 @@ class AudioPlayerActivity : AppCompatActivity() {
                 intent.getParcelableExtra(TRACK_KEY)
             }
 
-        preparePlayer()
 
         play.setOnClickListener {
             playbackControl()
@@ -71,6 +72,9 @@ class AudioPlayerActivity : AppCompatActivity() {
             binding.trackNameAudioPlayer.text = track.trackName
             binding.artistNameAudioPlayer.text = track.artistName
             binding.textViewRightDuration.text = formatTrackTime(track.trackTimeMillis)
+
+
+            url = track.previewUrl.toString()
 
             if (track.collectionName.isNotEmpty()) {
                 binding.textViewRightAlbum.text = track.collectionName
@@ -91,6 +95,8 @@ class AudioPlayerActivity : AppCompatActivity() {
                 .placeholder(R.drawable.placeholder_image)
                 .error(R.drawable.placeholder_image)
                 .into(binding.trackArtAudioPlayer)
+
+            preparePlayer()
         } else {
             finish()
         }
@@ -139,11 +145,21 @@ class AudioPlayerActivity : AppCompatActivity() {
     }
 
     private fun preparePlayer() {
-        mediaPlayer.setDataSource(url)
-        mediaPlayer.prepareAsync()
-        mediaPlayer.setOnPreparedListener {
-            play.isEnabled = true
-            playerState = STATE_PREPARED
+        if (url.isNullOrEmpty()) {
+            Toast.makeText(this, "Ошибка: аудиофайл недоступен", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        try {
+            mediaPlayer.setDataSource(url)
+            mediaPlayer.prepareAsync()
+            mediaPlayer.setOnPreparedListener {
+                play.isEnabled = true
+                playerState = STATE_PREPARED
+            }
+        } catch (e: Exception) {
+            Toast.makeText(this, "Ошибка при загрузке аудиофайла", Toast.LENGTH_SHORT).show()
+            e.printStackTrace()
         }
         mediaPlayer.setOnCompletionListener {
             play.setImageResource(R.drawable.ic_play)
