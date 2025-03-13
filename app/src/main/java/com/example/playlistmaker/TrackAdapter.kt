@@ -1,6 +1,8 @@
 package com.example.playlistmaker
 
 import android.content.Intent
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -11,6 +13,9 @@ class TrackAdapter(
     private val searchHistory: SearchHistory,
     private val onItemClickListener: (Track) -> Unit
 )  : RecyclerView.Adapter<TrackViewHolder>() {
+
+    private var isClickAllowed = true
+    private val handler = Handler(Looper.getMainLooper())
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TrackViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -23,17 +28,13 @@ class TrackAdapter(
         holder.bind(item, onItemClickListener)
 
         holder.itemView.setOnClickListener {
-            Log.d("TrackAdapter", "Clicked on track: ${item.trackId}")
             searchHistory.addTrack(item)
-            Log.d("TrackAdapter", "History after add: ${searchHistory.getHistory()}")
             searchHistory.saveHistory(searchHistory.getHistory())
-            onItemClickListener(item)
-
-            val intent = Intent(holder.itemView.context, AudioPlayerActivity::class.java)
-            intent.putExtra("track", item)
-            holder.itemView.context.startActivity(intent)
-
-            notifyDataSetChanged()
+            if (clickDebounce()) {
+                val intent = Intent(holder.itemView.context, AudioPlayerActivity::class.java)
+                intent.putExtra("track", item)
+                holder.itemView.context.startActivity(intent)
+            }
         }
     }
 
@@ -43,6 +44,19 @@ class TrackAdapter(
     fun submitList(newTracks: List<Track>) {
         tracks = newTracks
         notifyDataSetChanged()
+    }
+
+    private fun clickDebounce() : Boolean {
+        val current = isClickAllowed
+        if (isClickAllowed) {
+            isClickAllowed = false
+            handler.postDelayed({ isClickAllowed = true }, CLICK_DEBOUNCE_DELAY)
+        }
+        return current
+    }
+
+    companion object {
+        private const val CLICK_DEBOUNCE_DELAY = 1000L
     }
 }
 
