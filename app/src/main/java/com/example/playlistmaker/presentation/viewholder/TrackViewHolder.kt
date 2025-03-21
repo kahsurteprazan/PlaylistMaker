@@ -1,4 +1,4 @@
-package com.example.playlistmaker
+package com.example.playlistmaker.presentation.viewholder
 
 import android.content.res.Resources
 import android.view.View
@@ -7,6 +7,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.example.playlistmaker.R
+import com.example.playlistmaker.domain.model.Track
 
 
 class TrackViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -15,7 +17,7 @@ class TrackViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val artistName: TextView = itemView.findViewById(R.id.artist_name)
     private val trackTime: TextView = itemView.findViewById(R.id.track_time)
 
-    fun bind(track: Track, onItemClickListener: (Track) -> Unit) {
+    fun bind(track: Track) {
         trackName.text = track.trackName
         artistName.text = track.artistName
         trackTime.text = formatTrackTime(track.trackTimeMillis)
@@ -27,10 +29,6 @@ class TrackViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             .error(R.drawable.placeholder_image)
             .transform(RoundedCorners(2.toPx()))
             .into(trackImage)
-
-        itemView.setOnClickListener {
-            onItemClickListener(track)
-        }
     }
     fun Int.toPx(): Int {
         return (this * Resources.getSystem().displayMetrics.density).toInt()
