@@ -3,6 +3,7 @@ package com.example.playlistmaker
 import android.app.Application
 import androidx.appcompat.app.AppCompatDelegate
 import android.content.SharedPreferences
+import com.example.playlistmaker.creator.Creator
 
 class App : Application() {
 
@@ -11,6 +12,8 @@ class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
+
+        Creator.initApplication(this)
 
         sharedPreferences = getSharedPreferences("settings", MODE_PRIVATE)
         darkTheme = sharedPreferences.getBoolean("dark_theme", false)
