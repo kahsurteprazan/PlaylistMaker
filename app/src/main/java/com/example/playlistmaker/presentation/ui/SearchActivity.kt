@@ -13,11 +13,11 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.playlistmaker.creator.Creator
 import com.example.playlistmaker.databinding.ActivitySearchBinding
-import com.example.playlistmaker.domain.use_case.AddTrackToHistoryUseCase
-import com.example.playlistmaker.domain.use_case.ClearHistoryUseCase
-import com.example.playlistmaker.domain.use_case.GetHistoryUseCase
-import com.example.playlistmaker.domain.use_case.SaveHistoryUseCase
-import com.example.playlistmaker.domain.use_case.SearchTracksUseCase
+import com.example.playlistmaker.domain.use_case.search.AddTrackToHistoryUseCase
+import com.example.playlistmaker.domain.use_case.search.ClearHistoryUseCase
+import com.example.playlistmaker.domain.use_case.search.GetHistoryUseCase
+import com.example.playlistmaker.domain.use_case.search.SaveHistoryUseCase
+import com.example.playlistmaker.domain.use_case.search.SearchTracksUseCase
 import com.example.playlistmaker.presentation.adapter.TrackAdapter
 
 import java.io.IOException
@@ -62,7 +62,7 @@ class SearchActivity : AppCompatActivity() {
             onItemClickListener = { track ->
 
                 val intent = Intent(this, AudioPlayerActivity::class.java)
-                intent.putExtra("track", track)
+                intent.putExtra(KEY_TRACK, track)
                 startActivity(intent)
             },
             onAddToHistoryClickListener = { track ->
@@ -73,7 +73,7 @@ class SearchActivity : AppCompatActivity() {
         historyAdapter = TrackAdapter(
             onItemClickListener = { track ->
                 val intent = Intent(this, AudioPlayerActivity::class.java)
-                intent.putExtra("track", track)
+                intent.putExtra(KEY_TRACK, track)
                 startActivity(intent)
             },
             onAddToHistoryClickListener = { track ->
@@ -244,6 +244,7 @@ class SearchActivity : AppCompatActivity() {
     }
 
     companion object {
+        private const val KEY_TRACK = "track"
         private const val KEY_SEARCH_QUERY = "SEARCH_QUERY"
         private const val SEARCH_DELAY = 2000L
     }

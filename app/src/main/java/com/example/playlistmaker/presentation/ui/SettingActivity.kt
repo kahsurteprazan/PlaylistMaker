@@ -7,10 +7,18 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.example.playlistmaker.R
 import com.example.playlistmaker.databinding.ActivitySettingsBinding
-import com.example.playlistmaker.App
+import com.example.playlistmaker.creator.Creator
+import com.example.playlistmaker.domain.use_case.setting.ContactSupportUseCase
+import com.example.playlistmaker.domain.use_case.setting.ShareAppUseCase
+import com.example.playlistmaker.domain.use_case.setting.ThemeInteract
 
 class SettingActivity : AppCompatActivity() {
+
     private lateinit var binding: ActivitySettingsBinding
+
+    private val themeInteract: ThemeInteract by lazy { Creator.provideThemeUseCase() }
+    private lateinit var shareAppUseCase: ShareAppUseCase
+    private lateinit var contactSupportUseCase: ContactSupportUseCase
 
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -18,19 +26,21 @@ class SettingActivity : AppCompatActivity() {
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val app = applicationContext as App
-        binding.themeSwitcher.isChecked = app.darkTheme
+        shareAppUseCase = Creator.provideShareAppUseCase(this)
+        contactSupportUseCase = Creator.provideContactSupportUseCase(this)
+
+        binding.themeSwitcher.isChecked = themeInteract.isDarkTheme()
 
         binding.themeSwitcher.setOnCheckedChangeListener { _, isChecked ->
-            app.switchTheme(isChecked)
+            themeInteract.switchTheme(isChecked)
         }
 
         binding.shareAppOption.setOnClickListener {
-            shareApp()
+            shareAppUseCase()
         }
 
         binding.helpOption.setOnClickListener {
-            contactSupport()
+            contactSupportUseCase()
         }
 
 
@@ -48,28 +58,6 @@ class SettingActivity : AppCompatActivity() {
             finish()
         }
 
-    }
-
-    private fun shareApp() {
-        val shareIntent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/plain"
-            putExtra(Intent.EXTRA_TEXT, getString(R.string.practicum_share_url))
-        }
-        startActivity(Intent.createChooser(shareIntent, "Поделиться приложением"))
-    }
-
-
-    private fun contactSupport() {
-        val recipient = getString(R.string.support_email)
-        val subject = getString(R.string.support_subject)
-        val message = getString(R.string.support_message)
-
-        val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-            data = Uri.parse("mailto:$recipient")
-            putExtra(Intent.EXTRA_SUBJECT, subject)
-            putExtra(Intent.EXTRA_TEXT, message)
-        }
-        startActivity(emailIntent)
     }
 }
 
