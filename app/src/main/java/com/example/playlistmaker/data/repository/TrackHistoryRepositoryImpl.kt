@@ -1,11 +1,14 @@
-package com.example.playlistmaker
+package com.example.playlistmaker.data.repository
 
 import android.content.SharedPreferences
 import android.util.Log
+import com.example.playlistmaker.domain.model.Track
+import com.example.playlistmaker.domain.repository.TrackHistoryRepository
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
-class SearchHistory(private val sharedPreferences : SharedPreferences) {
+class TrackHistoryRepositoryImpl(private val sharedPreferences: SharedPreferences) :
+    TrackHistoryRepository {
 
     companion object {
         const val HISTORY_KEY = "search_history"
@@ -14,7 +17,7 @@ class SearchHistory(private val sharedPreferences : SharedPreferences) {
 
     private val gson = Gson()
 
-    fun addTrack(track: Track) {
+    override fun addTrack(track: Track) {
         val history = getHistory().toMutableList()
         history.removeIf {
             Log.d("SearchHistory", "Removing track with ID: ${it.trackId}")
@@ -29,7 +32,7 @@ class SearchHistory(private val sharedPreferences : SharedPreferences) {
         saveHistory(history)
     }
 
-    fun getHistory(): List<Track> {
+    override fun getHistory(): List<Track> {
         val json = sharedPreferences.getString(HISTORY_KEY, null)
         Log.d("SearchHistory", "Loaded history JSON: $json")
         val type = object : TypeToken<List<Track>>() {}.type
@@ -37,7 +40,7 @@ class SearchHistory(private val sharedPreferences : SharedPreferences) {
     }
 
 
-    fun clearHistory() {
+    override fun clearHistory() {
         val historyJson = sharedPreferences.getString(HISTORY_KEY, "[]")
         Log.d("History", "Loaded history before clear: $historyJson")
         val editor = sharedPreferences.edit()
@@ -46,8 +49,7 @@ class SearchHistory(private val sharedPreferences : SharedPreferences) {
     }
 
 
-
-    fun saveHistory(history: List<Track>) {
+    override fun saveHistory(history: List<Track>) {
         val json = gson.toJson(history)
         Log.d("SearchHistory", "Saving history JSON: $json")
         sharedPreferences.edit().putString(HISTORY_KEY, json).apply()
