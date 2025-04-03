@@ -5,20 +5,16 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import com.example.playlistmaker.R
 import com.example.playlistmaker.databinding.ActivitySettingsBinding
 import com.example.playlistmaker.creator.Creator
-import com.example.playlistmaker.domain.use_case.setting.ContactSupportUseCase
-import com.example.playlistmaker.domain.use_case.setting.ShareAppUseCase
-import com.example.playlistmaker.domain.use_case.setting.ThemeInteract
+import com.example.playlistmaker.presentation.viewmodel.setting.SettingsViewModel
+import com.example.playlistmaker.presentation.viewmodel.setting.SettingsViewModelFactory
 
 class SettingActivity : AppCompatActivity() {
-
     private lateinit var binding: ActivitySettingsBinding
-
-    private val themeInteract: ThemeInteract by lazy { Creator.provideThemeUseCase() }
-    private lateinit var shareAppUseCase: ShareAppUseCase
-    private lateinit var contactSupportUseCase: ContactSupportUseCase
+    private lateinit var viewModel: SettingsViewModel
 
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,23 +22,40 @@ class SettingActivity : AppCompatActivity() {
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        shareAppUseCase = Creator.provideShareAppUseCase(this)
-        contactSupportUseCase = Creator.provideContactSupportUseCase(this)
+        initViewModel()
+        setupObservers()
+        setupListeners()
+    }
 
-        binding.themeSwitcher.isChecked = themeInteract.isDarkTheme()
+    private fun initViewModel() {
+        viewModel = ViewModelProvider(
+            this,
+            SettingsViewModelFactory(
+                Creator.provideThemeUseCase(),
+                Creator.provideShareAppUseCase(this),
+                Creator.provideContactSupportUseCase(this)
+            )
+        ).get(SettingsViewModel::class.java)
+    }
 
+    private fun setupObservers() {
+        viewModel.isDarkTheme.observe(this) { isDark ->
+            binding.themeSwitcher.isChecked = isDark
+        }
+    }
+
+    private fun setupListeners() {
         binding.themeSwitcher.setOnCheckedChangeListener { _, isChecked ->
-            themeInteract.switchTheme(isChecked)
+            viewModel.switchTheme(isChecked)
         }
 
         binding.shareAppOption.setOnClickListener {
-            shareAppUseCase()
+            viewModel.shareApp()
         }
 
         binding.helpOption.setOnClickListener {
-            contactSupportUseCase()
+            viewModel.contactSupport()
         }
-
 
         binding.agreementOption.setOnClickListener {
             startActivity(
@@ -53,11 +66,9 @@ class SettingActivity : AppCompatActivity() {
             )
         }
 
-
         binding.settingsToolbar.setOnClickListener {
             finish()
         }
-
     }
 }
 

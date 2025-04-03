@@ -12,11 +12,14 @@ class ContactSupportRepositoryImpl(private val context: Context) : ContactSuppor
         val subject = context.getString(R.string.support_subject)
         val message = context.getString(R.string.support_message)
 
+        val mailtoUri = Uri.parse("mailto:$recipient" +
+                "?subject=${Uri.encode(subject)}" +
+                "&body=${Uri.encode(message)}")
+
         val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-            data = Uri.parse("mailto:$recipient")
-            putExtra(Intent.EXTRA_SUBJECT, subject)
-            putExtra(Intent.EXTRA_TEXT, message)
+            data = mailtoUri
         }
+
         context.startActivity(emailIntent)
     }
 }
