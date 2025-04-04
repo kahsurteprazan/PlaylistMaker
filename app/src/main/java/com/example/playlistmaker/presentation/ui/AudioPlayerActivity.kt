@@ -2,6 +2,7 @@ package com.example.playlistmaker.presentation.ui
 
 import android.annotation.SuppressLint
 import android.content.res.Resources
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -10,16 +11,17 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isGone
+import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.example.playlistmaker.R
 import com.example.playlistmaker.creator.Creator
 import com.example.playlistmaker.domain.model.Track
 import com.example.playlistmaker.databinding.ActivityAudioPlayerBinding
-import com.example.playlistmaker.domain.repository.AudioPlayerRepository
-import com.example.playlistmaker.domain.use_case.player.PlayAudioInteract
-import com.example.playlistmaker.domain.use_case.player.StartAudioUseCase
-import com.example.playlistmaker.domain.use_case.player.PauseAudioUseCase
+import com.example.playlistmaker.presentation.mappers.TrackMapper
+import com.example.playlistmaker.presentation.model.TrackUi
+import com.example.playlistmaker.presentation.viewmodel.audioPlayer.AudioPlayerViewModel
+import com.example.playlistmaker.presentation.viewmodel.audioPlayer.AudioPlayerViewModelFactory
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -27,10 +29,6 @@ import java.util.Locale
 class AudioPlayerActivity : AppCompatActivity() {
 
     companion object {
-        private const val STATE_DEFAULT = 0
-        private const val STATE_PREPARED = 1
-        private const val STATE_PLAYING = 2
-        private const val STATE_PAUSED = 3
         private const val TRACK_KEY = "track"
     }
 
@@ -39,18 +37,12 @@ class AudioPlayerActivity : AppCompatActivity() {
     private lateinit var play: ImageButton
 
     private val handler = Handler(Looper.getMainLooper())
-    private var playerState = STATE_DEFAULT
-    private var url: String? = ""
-
-    private val audioPlayer: AudioPlayerRepository by lazy { Creator.createAudioPlayer() }
-    private val playAudioUseCase: PlayAudioInteract by lazy { Creator.providePlayAudioInteract(audioPlayer) }
-    private lateinit var startAudioUseCase: StartAudioUseCase
-    private lateinit var pauseAudioUseCase: PauseAudioUseCase
+    private lateinit var viewModel: AudioPlayerViewModel
 
     private val updateRunnable = object : Runnable {
         override fun run() {
-            if (playerState == STATE_PLAYING) {
-                val currentPosition = audioPlayer.getCurrentPosition()
+            if (viewModel.playerState.value == AudioPlayerViewModel.STATE_PLAYING) {
+                val currentPosition = viewModel.getCurrentPosition()
                 timerTextView.text = SimpleDateFormat(
                     "m:ss",
                     Locale.getDefault()
@@ -65,115 +57,101 @@ class AudioPlayerActivity : AppCompatActivity() {
         binding = ActivityAudioPlayerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        startAudioUseCase = Creator.provideStartAudioUseCase(audioPlayer)
-        pauseAudioUseCase = Creator.providePauseAudioUseCase(audioPlayer)
+        // Инициализация ViewModel
+        val audioPlayer = Creator.createAudioPlayer()
+        val factory = AudioPlayerViewModelFactory(
+            Creator.providePlayAudioInteract(audioPlayer),
+            Creator.provideStartAudioUseCase(audioPlayer),
+            Creator.providePauseAudioUseCase(audioPlayer),
+            audioPlayer
+        )
+        viewModel = ViewModelProvider(this, factory).get(AudioPlayerViewModel::class.java)
 
+        initViews()
+        setupObservers()
+        handleIntent()
+        setupClickListeners()
+    }
+
+    private fun initViews() {
         timerTextView = binding.trackTimePlayedAudioPlayer
         play = binding.btnPlayAudioPlayer
+    }
 
-        val track: Track? =
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-                intent.getParcelableExtra(TRACK_KEY, Track::class.java)
-            } else {
-                @Suppress("DEPRECATION")
-                intent.getParcelableExtra(TRACK_KEY)
-            }
-
-        play.setOnClickListener {
-            playbackControl()
+    private fun setupObservers() {
+        viewModel.playButtonResId.observe(this) { resId ->
+            play.setImageResource(resId)
         }
 
-        if (track != null) {
-            binding.trackNameAudioPlayer.text = track.trackName
-            binding.artistNameAudioPlayer.text = track.artistName
-            binding.textViewRightDuration.text = formatTrackTime(track.trackTimeMillis)
+        viewModel.playerState.observe(this) { state ->
+            when (state) {
+                AudioPlayerViewModel.STATE_PLAYING -> handler.post(updateRunnable)
+                else -> handler.removeCallbacks(updateRunnable)
+            }
+        }
 
-            url = track.previewUrl.toString()
+        viewModel.errorMessage.observe(this) { message ->
+            message?.let {
+                Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun handleIntent() {
+        val trackUi = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra(TRACK_KEY, TrackUi::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getParcelableExtra(TRACK_KEY)
+        } ?: return finish()
+        val track = TrackMapper.mapToDomain(trackUi)
+
+        track.let { setupTrackInfo(it) }
+    }
+
+    private fun setupTrackInfo(track: Track) {
+        with(binding) {
+            trackNameAudioPlayer.text = track.trackName
+            artistNameAudioPlayer.text = track.artistName
+            textViewRightDuration.text = formatTrackTime(track.trackTimeMillis)
 
             if (track.collectionName.isNotEmpty()) {
-                binding.textViewRightAlbum.text = track.collectionName
+                textViewRightAlbum.text = track.collectionName
             } else {
-                binding.textViewRightAlbum.isGone = true
-                binding.textViewLeftAlbum.isGone = true
+                textViewRightAlbum.isGone = true
+                textViewLeftAlbum.isGone = true
             }
 
-            binding.textViewRightYear.text = formatYearFromDate(track.releaseDate)
-            binding.textViewRightGenre.text = track.primaryGenreName
-            binding.textViewRightCountry.text = track.country
+            textViewRightYear.text = formatYearFromDate(track.releaseDate)
+            textViewRightGenre.text = track.primaryGenreName
+            textViewRightCountry.text = track.country
 
-            Glide.with(this)
+            Glide.with(this@AudioPlayerActivity)
                 .load(track.getCoverArtwork())
                 .transform(RoundedCorners(8.toPx()))
                 .fitCenter()
                 .placeholder(R.drawable.placeholder_image)
                 .error(R.drawable.placeholder_image)
-                .into(binding.trackArtAudioPlayer)
+                .into(trackArtAudioPlayer)
 
-            preparePlayer()
-        } else {
-            finish()
+            viewModel.preparePlayer(track.previewUrl.toString())
         }
+    }
 
-        binding.btnBackAudioPlayer.setOnClickListener {
-            finish()
-        }
+    private fun setupClickListeners() {
+        play.setOnClickListener { viewModel.playbackControl() }
+        binding.btnBackAudioPlayer.setOnClickListener { finish() }
     }
 
     override fun onPause() {
         super.onPause()
         handler.removeCallbacks(updateRunnable)
-        pauseAudioUseCase.execute()
-        playerState = STATE_PAUSED
-        updatePlayButton()
+        viewModel.pause()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         handler.removeCallbacks(updateRunnable)
-        audioPlayer.release()
-    }
-
-    private fun playbackControl() {
-        when (playerState) {
-            STATE_PLAYING -> {
-                pauseAudioUseCase.execute()
-                playerState = STATE_PAUSED
-            }
-            STATE_PREPARED, STATE_PAUSED -> {
-                startAudioUseCase.execute()
-                playerState = STATE_PLAYING
-                handler.post(updateRunnable)
-            }
-        }
-        updatePlayButton()
-    }
-
-    private fun preparePlayer() {
-        if (url.isNullOrEmpty()) {
-            Toast.makeText(this, "Ошибка: аудиофайл недоступен", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        playAudioUseCase.execute(
-            url!!,
-            onPrepared = {
-                play.isEnabled = true
-                playerState = STATE_PREPARED
-                updatePlayButton()
-            },
-            onCompletion = {
-                playerState = STATE_PAUSED
-                updatePlayButton()
-                timerTextView.text = "0:00"
-            }
-        )
-    }
-
-    private fun updatePlayButton() {
-        when (playerState) {
-            STATE_PLAYING -> play.setImageResource(R.drawable.ic_pause)
-            STATE_PREPARED, STATE_PAUSED -> play.setImageResource(R.drawable.ic_play)
-        }
     }
 
     @SuppressLint("DefaultLocale")
@@ -193,4 +171,5 @@ class AudioPlayerActivity : AppCompatActivity() {
     private fun Int.toPx(): Int {
         return (this * Resources.getSystem().displayMetrics.density).toInt()
     }
+
 }

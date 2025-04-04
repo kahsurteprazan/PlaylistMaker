@@ -39,6 +39,7 @@
             android:ellipsize="end"
             android:fontFamily="@font/ys_display_regular"
             android:maxLines="1"
+            android:maxWidth="260dp"
             android:textColor="@color/Main_Text_Colors"
             android:textSize="16sp"
             app:layout_constraintStart_toStartOf="parent"

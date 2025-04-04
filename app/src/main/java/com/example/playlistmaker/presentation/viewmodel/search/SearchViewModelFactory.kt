@@ -1,4 +1,4 @@
-package com.example.playlistmaker.presentation.viewmodel
+package com.example.playlistmaker.presentation.viewmodel.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

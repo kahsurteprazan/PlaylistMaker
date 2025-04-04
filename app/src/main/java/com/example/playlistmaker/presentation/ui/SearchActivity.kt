@@ -6,7 +6,6 @@ import android.os.Handler
 import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.inputmethod.EditorInfo
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
@@ -16,9 +15,11 @@ import com.example.playlistmaker.creator.Creator
 import com.example.playlistmaker.databinding.ActivitySearchBinding
 import com.example.playlistmaker.domain.model.Track
 import com.example.playlistmaker.presentation.adapter.TrackAdapter
-import com.example.playlistmaker.presentation.viewmodel.SearchState
-import com.example.playlistmaker.presentation.viewmodel.SearchViewModel
-import com.example.playlistmaker.presentation.viewmodel.SearchViewModelFactory
+import com.example.playlistmaker.presentation.model.TrackUi
+import com.example.playlistmaker.presentation.viewmodel.search.SearchState
+import com.example.playlistmaker.presentation.viewmodel.search.SearchViewModel
+import com.example.playlistmaker.presentation.viewmodel.search.SearchViewModelFactory
+import java.io.IOException
 
 
 class SearchActivity : AppCompatActivity() {
@@ -28,6 +29,7 @@ class SearchActivity : AppCompatActivity() {
     private lateinit var trackAdapter: TrackAdapter
     private lateinit var historyAdapter: TrackAdapter
     private val handler = Handler(Looper.getMainLooper())
+    private var isFirstLaunch = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,6 +43,20 @@ class SearchActivity : AppCompatActivity() {
         setupSearchInput()
         setupButtons()
         observeViewModel()
+
+        savedInstanceState?.let {
+            isFirstLaunch = it.getBoolean("IS_FIRST_LAUNCH", true)
+        }
+
+        viewModel.loadHistory()
+        binding.editTextSearch.post {
+            binding.editTextSearch.requestFocus()
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean("IS_FIRST_LAUNCH", isFirstLaunch)
     }
 
     private fun initViewModel() {
@@ -80,30 +96,30 @@ class SearchActivity : AppCompatActivity() {
     private fun setupSearchInput() {
         binding.editTextSearch.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 handler.removeCallbacksAndMessages(null)
                 binding.clearButtonSearch.isVisible = !s.isNullOrEmpty()
             }
 
             override fun afterTextChanged(s: Editable?) {
-                s?.let {
-                    if (it.isNotEmpty()) {
-                        handler.postDelayed({
-                            viewModel.searchDebounced(it.toString())
-                        }, SearchViewModel.SEARCH_DELAY)
-                    } else {
-                        showHistory()
-                    }
+                val query = s?.toString() ?: ""
+                viewModel.updateSearchQuery(query)
+
+                if (query.isEmpty()) {
+                    trackAdapter.submitList(emptyList())
+                    viewModel.loadHistory()
+                } else {
+                    handler.postDelayed({
+                        viewModel.searchDebounced(query)
+                    }, SearchViewModel.SEARCH_DELAY)
                 }
             }
         })
 
-        binding.editTextSearch.setOnEditorActionListener { _, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_DONE && binding.editTextSearch.text.isNotEmpty()) {
-                viewModel.searchDebounced(binding.editTextSearch.text.toString())
-                true
-            } else {
-                false
+        binding.editTextSearch.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus && binding.editTextSearch.text.isNullOrEmpty()) {
+                viewModel.loadHistory()
             }
         }
     }
@@ -111,7 +127,9 @@ class SearchActivity : AppCompatActivity() {
     private fun setupButtons() {
         binding.clearButtonSearch.setOnClickListener {
             binding.editTextSearch.text.clear()
-            showHistory()
+            binding.editTextSearch.requestFocus()
+            trackAdapter.submitList(emptyList())
+            viewModel.loadHistory()
         }
 
         binding.clearButtonSearchHistory.setOnClickListener {
@@ -131,31 +149,22 @@ class SearchActivity : AppCompatActivity() {
         viewModel.searchState.observe(this) { state ->
             when (state) {
                 is SearchState.Loading -> showLoading()
-                is SearchState.Content -> {
-                    trackAdapter.submitList(state.tracks)
-                    showResults()
-                }
-                is SearchState.Empty -> showPlaceholderNoResults()
-                is SearchState.Error -> {
-                    if (state.throwable is java.io.IOException) {
-                        showPlaceholderNoInternet()
-                    } else {
-                        showPlaceholderNoResults()
-                    }
-                }
+                is SearchState.Content -> showSearchResults(state.tracks)
+                is SearchState.Empty -> showEmptyResults()
+                is SearchState.Error -> handleSearchError(state.throwable)
             }
         }
 
         viewModel.historyState.observe(this) { history ->
             historyAdapter.submitList(history)
-            binding.historySearch.isVisible = history.isNotEmpty() &&
-                    binding.editTextSearch.text.isNullOrEmpty()
+            updateHistoryVisibility()
         }
     }
 
     private fun onTrackClick(track: Track) {
-        val intent = Intent(this, AudioPlayerActivity::class.java)
-        intent.putExtra(KEY_TRACK, track)
+        val intent = Intent(this, AudioPlayerActivity::class.java).apply {
+            putExtra(KEY_TRACK, TrackUi(track))
+        }
         startActivity(intent)
     }
 
@@ -163,28 +172,25 @@ class SearchActivity : AppCompatActivity() {
         viewModel.addToHistory(track)
     }
 
-    private fun showHistory() {
-        viewModel.loadHistory()
-        binding.recyclerView.isVisible = false
-        binding.placeholderNoResults.isVisible = false
-        binding.placeholderNoInternet.isVisible = false
-    }
-
     private fun showLoading() {
+        binding.historySearch.isVisible = false
         binding.progressBar.isVisible = true
         binding.recyclerView.isVisible = false
         binding.placeholderNoResults.isVisible = false
         binding.placeholderNoInternet.isVisible = false
     }
 
-    private fun showResults() {
+    private fun showSearchResults(tracks: List<Track>) {
+        binding.historySearch.isVisible = false
         binding.progressBar.isVisible = false
         binding.recyclerView.isVisible = true
         binding.placeholderNoResults.isVisible = false
         binding.placeholderNoInternet.isVisible = false
+        trackAdapter.submitList(tracks)
     }
 
-    private fun showPlaceholderNoResults() {
+    private fun showEmptyResults() {
+        binding.historySearch.isVisible = false
         binding.progressBar.isVisible = false
         binding.recyclerView.isVisible = false
         binding.placeholderNoResults.isVisible = true
@@ -192,10 +198,32 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun showPlaceholderNoInternet() {
+        binding.historySearch.isVisible = false
         binding.progressBar.isVisible = false
         binding.recyclerView.isVisible = false
         binding.placeholderNoResults.isVisible = false
         binding.placeholderNoInternet.isVisible = true
+    }
+
+    private fun handleSearchError(throwable: Throwable) {
+        if (throwable is IOException) {
+            showPlaceholderNoInternet()
+        } else {
+            showEmptyResults()
+        }
+    }
+
+    private fun updateHistoryVisibility() {
+        val hasHistory = viewModel.historyState.value?.isNotEmpty() == true
+        val shouldShowHistory = hasHistory &&
+                binding.editTextSearch.text.isNullOrEmpty() &&
+                (binding.editTextSearch.hasFocus() || isFirstLaunch)
+
+        binding.historySearch.isVisible = shouldShowHistory
+
+        if (shouldShowHistory && isFirstLaunch) {
+            isFirstLaunch = false
+        }
     }
 
     companion object {

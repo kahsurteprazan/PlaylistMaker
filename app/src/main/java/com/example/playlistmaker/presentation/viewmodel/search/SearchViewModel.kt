@@ -1,4 +1,4 @@
-package com.example.playlistmaker.presentation.viewmodel
+package com.example.playlistmaker.presentation.viewmodel.search
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -22,16 +22,15 @@ class SearchViewModel(
     private val _historyState = MutableLiveData<List<Track>>()
     val historyState: LiveData<List<Track>> = _historyState
 
-    init {
-        loadHistory()
+    private val _searchQuery = MutableLiveData<String>()
+    val searchQuery: LiveData<String> = _searchQuery
+
+    fun updateSearchQuery(query: String) {
+        _searchQuery.value = query
     }
 
-    private var currentQuery: String = ""
-
     fun searchDebounced(query: String) {
-        currentQuery = query
         _searchState.value = SearchState.Loading
-
         searchTracksUseCase.search(query) { result ->
             result.onSuccess { tracks ->
                 _searchState.value = if (tracks.isNotEmpty()) {
@@ -62,6 +61,7 @@ class SearchViewModel(
     companion object {
         const val SEARCH_DELAY = 2000L
     }
+
 }
 
 
