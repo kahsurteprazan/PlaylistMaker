@@ -9,23 +9,21 @@ import android.text.TextWatcher
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.playlistmaker.creator.Creator
 import com.example.playlistmaker.databinding.ActivitySearchBinding
 import com.example.playlistmaker.domain.model.Track
 import com.example.playlistmaker.presentation.adapter.TrackAdapter
 import com.example.playlistmaker.presentation.model.TrackUi
 import com.example.playlistmaker.presentation.viewmodel.search.SearchState
 import com.example.playlistmaker.presentation.viewmodel.search.SearchViewModel
-import com.example.playlistmaker.presentation.viewmodel.search.SearchViewModelFactory
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.io.IOException
 
 
 class SearchActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySearchBinding
-    private lateinit var viewModel: SearchViewModel
+    private val viewModel: SearchViewModel by viewModel()
     private lateinit var trackAdapter: TrackAdapter
     private lateinit var historyAdapter: TrackAdapter
     private val handler = Handler(Looper.getMainLooper())
@@ -37,7 +35,6 @@ class SearchActivity : AppCompatActivity() {
         binding = ActivitySearchBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        initViewModel()
         setupAdapters()
         setupRecyclerViews()
         setupSearchInput()
@@ -57,18 +54,6 @@ class SearchActivity : AppCompatActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putBoolean("IS_FIRST_LAUNCH", isFirstLaunch)
-    }
-
-    private fun initViewModel() {
-        viewModel = ViewModelProvider(
-            this,
-            SearchViewModelFactory(
-                Creator.provideSearchTracksUseCase(),
-                Creator.provideAddTrackToHistoryUseCase(),
-                Creator.provideGetHistoryUseCase(),
-                Creator.provideClearHistoryUseCase()
-            )
-        ).get(SearchViewModel::class.java)
     }
 
     private fun setupAdapters() {

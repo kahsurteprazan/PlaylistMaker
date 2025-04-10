@@ -15,13 +15,15 @@ import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.example.playlistmaker.R
-import com.example.playlistmaker.creator.Creator
 import com.example.playlistmaker.domain.model.Track
 import com.example.playlistmaker.databinding.ActivityAudioPlayerBinding
+import com.example.playlistmaker.domain.repository.AudioPlayerRepository
 import com.example.playlistmaker.presentation.mappers.TrackMapper
 import com.example.playlistmaker.presentation.model.TrackUi
 import com.example.playlistmaker.presentation.viewmodel.audioPlayer.AudioPlayerViewModel
-import com.example.playlistmaker.presentation.viewmodel.audioPlayer.AudioPlayerViewModelFactory
+import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.parameter.parametersOf
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -32,12 +34,14 @@ class AudioPlayerActivity : AppCompatActivity() {
         private const val TRACK_KEY = "track"
     }
 
+    private val audioPlayer: AudioPlayerRepository by inject()
+    private val viewModel: AudioPlayerViewModel by viewModel { parametersOf(audioPlayer) }
+
     private lateinit var binding: ActivityAudioPlayerBinding
     private lateinit var timerTextView: TextView
     private lateinit var play: ImageButton
 
     private val handler = Handler(Looper.getMainLooper())
-    private lateinit var viewModel: AudioPlayerViewModel
 
     private val updateRunnable = object : Runnable {
         override fun run() {
@@ -56,17 +60,6 @@ class AudioPlayerActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAudioPlayerBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        // Инициализация ViewModel
-        val audioPlayer = Creator.createAudioPlayer()
-        val factory = AudioPlayerViewModelFactory(
-            Creator.providePlayAudioInteract(audioPlayer),
-            Creator.provideStartAudioUseCase(audioPlayer),
-            Creator.providePauseAudioUseCase(audioPlayer),
-            audioPlayer
-        )
-        viewModel = ViewModelProvider(this, factory).get(AudioPlayerViewModel::class.java)
-
         initViews()
         setupObservers()
         handleIntent()
