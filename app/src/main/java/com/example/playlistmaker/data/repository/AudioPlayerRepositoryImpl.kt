@@ -1,11 +1,20 @@
 package com.example.playlistmaker.data.repository
 
 import android.media.MediaPlayer
+import android.util.Log
 import com.example.playlistmaker.domain.repository.AudioPlayerRepository
 
-class AudioPlayerRepositoryImpl(private val mediaPlayer: MediaPlayer) : AudioPlayerRepository {
+class AudioPlayerRepositoryImpl(private var mediaPlayer: MediaPlayer) : AudioPlayerRepository {
+
     override fun setDataSource(url: String) {
-        mediaPlayer.setDataSource(url)
+        try {
+            mediaPlayer.release()
+            mediaPlayer = MediaPlayer()
+            mediaPlayer.setDataSource(url)
+        } catch (e: Exception) {
+            Log.e("AudioPlayer", "Error setting data source", e)
+            throw e
+        }
     }
 
     override fun prepareAsync() {

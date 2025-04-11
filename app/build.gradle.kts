@@ -57,5 +57,6 @@ dependencies {
     implementation ("androidx.recyclerview:recyclerview:1.2.1")
     implementation ("com.google.android.material:material:1.6.1")
     implementation ("com.github.bumptech.glide:glide:4.15.1")
+    implementation ("io.insert-koin:koin-android:3.3.0")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.15.1")
 }
