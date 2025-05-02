@@ -3,6 +3,7 @@ package com.example.playlistmaker.di
 import android.app.Activity
 import com.example.playlistmaker.domain.repository.AudioPlayerRepository
 import com.example.playlistmaker.presentation.viewmodel.audioPlayer.AudioPlayerViewModel
+import com.example.playlistmaker.presentation.viewmodel.media.MediaViewModel
 import com.example.playlistmaker.presentation.viewmodel.search.SearchViewModel
 import com.example.playlistmaker.presentation.viewmodel.setting.SettingsViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -17,6 +18,10 @@ val viewModelModule = module {
             pauseAudioUseCase = get(),
             audioPlayer = audioPlayer
         )
+    }
+
+    viewModel {
+        MediaViewModel()
     }
 
     viewModel {
