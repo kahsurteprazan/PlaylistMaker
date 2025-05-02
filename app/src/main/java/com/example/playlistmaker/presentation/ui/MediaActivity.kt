@@ -1,32 +1,50 @@
 package com.example.playlistmaker.presentation.ui
 
 import android.content.Intent
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.widget.Button
+import android.widget.LinearLayout
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.playlistmaker.R
+import com.example.playlistmaker.databinding.ActivityMediaBinding
+import com.example.playlistmaker.presentation.adapter.MediaViewPagerAdapter
+import com.example.playlistmaker.presentation.viewmodel.media.MediaViewModel
+import com.example.playlistmaker.presentation.viewmodel.search.SearchViewModel
+import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MediaActivity : AppCompatActivity() {
+
+    private val viewModel: MediaViewModel by viewModel()
+    private lateinit var binding: ActivityMediaBinding
+    private lateinit var tabMediator: TabLayoutMediator
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContentView(R.layout.activity_media)
 
+        binding = ActivityMediaBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        findViewById<Button>(R.id.btn_backMedia).setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
+        binding.viewPager.adapter = MediaViewPagerAdapter(supportFragmentManager, lifecycle)
+
+        tabMediator = TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
+            when (position) {
+                0 -> tab.text = "Избранные треки"
+                1 -> tab.text = "Плейлисты"
+            }
         }
+        tabMediator.attach()
 
+        binding.back.setOnClickListener { finish() }
+    }
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
+    override fun onDestroy() {
+        super.onDestroy()
+        tabMediator.detach()
     }
 }
