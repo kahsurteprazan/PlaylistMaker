@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Цвет активной иконки -->
+    <item android:color="@color/blue_practicum_static" android:state_checked="true"/>
+    <!-- Цвет неактивной иконки -->
+    <item android:color="@color/text_black_white" android:state_checked="false"/>
+</selector>

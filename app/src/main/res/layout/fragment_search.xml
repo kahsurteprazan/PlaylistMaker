@@ -2,19 +2,17 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     android:orientation="vertical"
-    tools:context=".presentation.ui.SearchActivity">
+    android:background="@color/text_white_black">
 
 
     <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/back_and_search"
+        android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:navigationIcon="@drawable/ic_back"
         app:title="@string/search"
         app:titleTextAppearance="@style/ToolbarTitleStyle" />
 
@@ -69,7 +67,7 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="wrap_content" />
 
         <!-- Placeholder: No results -->
         <LinearLayout
@@ -178,7 +176,7 @@
                 android:layout_height="wrap_content"
                 app:layout_constraintBottom_toTopOf="@+id/clearButtonSearchHistory"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHeight_max="550dp"
+                app:layout_constraintHeight_max="525dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textView" />
 
