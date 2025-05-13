@@ -29,6 +29,10 @@ class SearchViewModel(
         _searchQuery.value = query
     }
 
+    fun clearSearchState() {
+        _searchQuery.value = ""
+    }
+
     fun searchDebounced(query: String) {
         _searchState.value = SearchState.Loading
         searchTracksUseCase.search(query) { result ->
@@ -61,7 +65,6 @@ class SearchViewModel(
     companion object {
         const val SEARCH_DELAY = 2000L
     }
-
 }
 
 

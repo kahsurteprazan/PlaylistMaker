@@ -4,14 +4,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    >
+    android:background="@color/text_white_black">
 
     <!-- Toolbar -->
     <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/settings_toolbar"
+        android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:navigationIcon="@drawable/ic_back"
         app:title="@string/settings"
         app:titleTextAppearance="@style/ToolbarTitleStyle"
         app:titleMarginStart="0dp"

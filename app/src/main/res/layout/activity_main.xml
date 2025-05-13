@@ -1,46 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/main"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/blue_practicum"
-    android:orientation="vertical"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
-    android:paddingBottom="28dp">
+    tools:context=".presentation.ui.MainActivity">
 
-    <TextView
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/navHostFragment"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:name="androidx.navigation.fragment.NavHostFragment"
+        app:defaultNavHost="true"
+        app:navGraph="@navigation/nav_graph"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigationView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <View
+        android:id="@+id/polosca"
         android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="#E6E8EB"
+        app:layout_constraintBottom_toBottomOf="@+id/navHostFragment"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigationView"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="14dp"
-        android:layout_marginBottom="16dp"
-        android:fontFamily="@font/ys_display_medium"
-        android:text="@string/playlist_maker"
-        android:textColor="@color/white"
-        android:textSize="22sp" />
-
-    <Button
-        android:id="@+id/search_button_main"
-        style="@style/Btn_MainActivity_Style"
-        android:layout_marginTop="24dp"
-        android:text="@string/search"
-        app:icon="@drawable/ic_search"
-         />
-
-    <Button
-        android:id="@+id/media_button_main"
-        style="@style/Btn_MainActivity_Style"
-        android:layout_marginTop="@dimen/padding_16dp"
-        android:text="@string/library"
-        app:icon="@drawable/ic_media"
+        app:menu="@menu/bottom_nav_menu"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        style="@style/BottomNavigationTheme"
         />
-
-    <Button
-        android:id="@+id/setting_button_main"
-        style="@style/Btn_MainActivity_Style"
-        android:layout_marginTop="@dimen/padding_16dp"
-        android:text="@string/settings"
-        app:icon="@drawable/ic_settings"
-        />
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

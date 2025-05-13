@@ -23,4 +23,6 @@
     <string name="Genre">Жанр</string>
     <string name="Country">Страна</string>
     <string name="Duration">Длительность</string>
+    <string name="media_playlist_zaglushka">Вы не создали\nни одного плейлиста</string>
+    <string name="media_favorite_zaglushka">Ваша медиа пуста</string>
 </resources>

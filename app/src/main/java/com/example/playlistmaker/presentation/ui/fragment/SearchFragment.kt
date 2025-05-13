@@ -1,4 +1,4 @@
-package com.example.playlistmaker.presentation.ui
+package com.example.playlistmaker.presentation.ui.fragment
 
 import android.content.Intent
 import android.os.Bundle
@@ -6,54 +6,65 @@ import android.os.Handler
 import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.playlistmaker.databinding.ActivitySearchBinding
+import com.example.playlistmaker.databinding.FragmentSearchBinding
 import com.example.playlistmaker.domain.model.Track
 import com.example.playlistmaker.presentation.adapter.TrackAdapter
 import com.example.playlistmaker.presentation.model.TrackUi
+import com.example.playlistmaker.presentation.ui.AudioPlayerActivity
 import com.example.playlistmaker.presentation.viewmodel.search.SearchState
 import com.example.playlistmaker.presentation.viewmodel.search.SearchViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.io.IOException
 
+class SearchFragment : Fragment() {
 
-class SearchActivity : AppCompatActivity() {
+    private var _binding: FragmentSearchBinding? = null
+    private val binding: FragmentSearchBinding
+        get() = _binding ?: throw RuntimeException("FragmentSearchBinding = null")
 
-    private lateinit var binding: ActivitySearchBinding
     private val viewModel: SearchViewModel by viewModel()
     private lateinit var trackAdapter: TrackAdapter
     private lateinit var historyAdapter: TrackAdapter
     private val handler = Handler(Looper.getMainLooper())
-    private var isFirstLaunch = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        binding = ActivitySearchBinding.inflate(layoutInflater)
-        setContentView(binding.root)
 
+        viewModel.loadHistory()
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentSearchBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         setupAdapters()
         setupRecyclerViews()
         setupSearchInput()
         setupButtons()
         observeViewModel()
-
-        savedInstanceState?.let {
-            isFirstLaunch = it.getBoolean("IS_FIRST_LAUNCH", true)
-        }
-
-        viewModel.loadHistory()
+        viewModel.clearSearchState()
         binding.editTextSearch.post {
             binding.editTextSearch.requestFocus()
         }
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putBoolean("IS_FIRST_LAUNCH", isFirstLaunch)
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     private fun setupAdapters() {
@@ -69,11 +80,11 @@ class SearchActivity : AppCompatActivity() {
 
     private fun setupRecyclerViews() {
         binding.recyclerView.apply {
-            layoutManager = LinearLayoutManager(this@SearchActivity)
+            layoutManager = LinearLayoutManager(requireContext())
             adapter = trackAdapter
         }
         binding.searchHistoryList.apply {
-            layoutManager = LinearLayoutManager(this@SearchActivity)
+            layoutManager = LinearLayoutManager(requireContext())
             adapter = historyAdapter
         }
     }
@@ -89,6 +100,7 @@ class SearchActivity : AppCompatActivity() {
 
             override fun afterTextChanged(s: Editable?) {
                 val query = s?.toString() ?: ""
+                binding.placeholderNoInternet.isVisible = false
                 viewModel.updateSearchQuery(query)
 
                 if (query.isEmpty()) {
@@ -112,6 +124,8 @@ class SearchActivity : AppCompatActivity() {
     private fun setupButtons() {
         binding.clearButtonSearch.setOnClickListener {
             binding.editTextSearch.text.clear()
+            binding.placeholderNoResults.isVisible = false
+            binding.placeholderNoInternet.isVisible = false
             binding.editTextSearch.requestFocus()
             trackAdapter.submitList(emptyList())
             viewModel.loadHistory()
@@ -121,17 +135,13 @@ class SearchActivity : AppCompatActivity() {
             viewModel.clearHistory()
         }
 
-        binding.backAndSearch.setOnClickListener {
-            finish()
-        }
-
         binding.refreshButton.setOnClickListener {
             viewModel.searchDebounced(binding.editTextSearch.text.toString())
         }
     }
 
     private fun observeViewModel() {
-        viewModel.searchState.observe(this) { state ->
+        viewModel.searchState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is SearchState.Loading -> showLoading()
                 is SearchState.Content -> showSearchResults(state.tracks)
@@ -140,17 +150,18 @@ class SearchActivity : AppCompatActivity() {
             }
         }
 
-        viewModel.historyState.observe(this) { history ->
+        viewModel.historyState.observe(viewLifecycleOwner) { history ->
             historyAdapter.submitList(history)
             updateHistoryVisibility()
         }
     }
 
     private fun onTrackClick(track: Track) {
-        val intent = Intent(this, AudioPlayerActivity::class.java).apply {
+        startActivity(
+            Intent(
+                requireContext(), AudioPlayerActivity::class.java).apply {
             putExtra(KEY_TRACK, TrackUi(track))
-        }
-        startActivity(intent)
+        })
     }
 
     private fun onAddToHistoryClick(track: Track) {
@@ -200,21 +211,13 @@ class SearchActivity : AppCompatActivity() {
 
     private fun updateHistoryVisibility() {
         val hasHistory = viewModel.historyState.value?.isNotEmpty() == true
-        val shouldShowHistory = hasHistory &&
-                binding.editTextSearch.text.isNullOrEmpty() &&
-                (binding.editTextSearch.hasFocus() || isFirstLaunch)
+        val hasSearchQuery = !binding.editTextSearch.text.isNullOrEmpty()
 
-        binding.historySearch.isVisible = shouldShowHistory
-
-        if (shouldShowHistory && isFirstLaunch) {
-            isFirstLaunch = false
-        }
+        binding.historySearch.isVisible = hasHistory && !hasSearchQuery
+        binding.recyclerView.isVisible = !binding.historySearch.isVisible
     }
 
     companion object {
         const val KEY_TRACK = "track"
     }
 }
-
-
-
