@@ -14,7 +14,7 @@
     <string name="support_subject" translatable="false">Сообщение разработчикам и разработчицам приложения Playlist Maker</string>
     <string name="support_message" translatable="false">Спасибо разработчикам и разработчицам за крутое приложение!</string>
     <string name="no_results" translatable="false">Ничего не нашлось</string>
-    <string name="no_internet" translatable="false">Проблема со связью\n\nЗагрузка не удалась. Проверте подключение к интеренту</string>
+    <string name="no_internet" translatable="false">Проблема со связью\n\nЗагрузка не удалась. Проверьте подключение к интернету</string>
     <string name="refresh" translatable="false">Обновить</string>
     <string name="clear_button_searchHistory" translatable="false">Очистить историю</string>
     <string name="text_searchHistory" translatable="false">Вы искали</string>
@@ -24,5 +24,5 @@
     <string name="Country">Страна</string>
     <string name="Duration">Длительность</string>
     <string name="media_playlist_zaglushka">Вы не создали\nни одного плейлиста</string>
-    <string name="media_favorite_zaglushka">Ваша медиа пуста</string>
+    <string name="media_favorite_zaglushka">Ваша медиатека пуста</string>
 </resources>
