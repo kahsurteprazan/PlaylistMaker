@@ -4,7 +4,7 @@ import com.example.playlistmaker.domain.repository.TrackHistoryRepository
 
 class ClearHistoryUseCase(private val trackHistoryRepository: TrackHistoryRepository) {
 
-    operator fun invoke() {
+    suspend  operator fun invoke() {
         trackHistoryRepository.clearHistory()
     }
 }

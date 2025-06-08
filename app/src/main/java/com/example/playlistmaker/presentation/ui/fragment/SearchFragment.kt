@@ -11,6 +11,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.playlistmaker.databinding.FragmentSearchBinding
 import com.example.playlistmaker.domain.model.Track
@@ -19,11 +21,19 @@ import com.example.playlistmaker.presentation.model.TrackUi
 import com.example.playlistmaker.presentation.ui.AudioPlayerActivity
 import com.example.playlistmaker.presentation.viewmodel.search.SearchState
 import com.example.playlistmaker.presentation.viewmodel.search.SearchViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.io.IOException
 
 class SearchFragment : Fragment() {
-
     private var _binding: FragmentSearchBinding? = null
     private val binding: FragmentSearchBinding
         get() = _binding ?: throw RuntimeException("FragmentSearchBinding = null")
@@ -31,11 +41,12 @@ class SearchFragment : Fragment() {
     private val viewModel: SearchViewModel by viewModel()
     private lateinit var trackAdapter: TrackAdapter
     private lateinit var historyAdapter: TrackAdapter
-    private val handler = Handler(Looper.getMainLooper())
+    private var searchJob: Job? = null
+
+    private val coroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         viewModel.loadHistory()
     }
 
@@ -48,7 +59,6 @@ class SearchFragment : Fragment() {
         return binding.root
     }
 
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupAdapters()
@@ -56,14 +66,12 @@ class SearchFragment : Fragment() {
         setupSearchInput()
         setupButtons()
         observeViewModel()
-        viewModel.clearSearchState()
-        binding.editTextSearch.post {
-            binding.editTextSearch.requestFocus()
-        }
+        updateHistoryVisibility()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        coroutineScope.coroutineContext.cancelChildren()
         _binding = null
     }
 
@@ -91,10 +99,12 @@ class SearchFragment : Fragment() {
 
     private fun setupSearchInput() {
         binding.editTextSearch.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                binding.placeholderNoResults.isVisible = false
+            }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                handler.removeCallbacksAndMessages(null)
+                searchJob?.cancel()
                 binding.clearButtonSearch.isVisible = !s.isNullOrEmpty()
             }
 
@@ -106,19 +116,17 @@ class SearchFragment : Fragment() {
                 if (query.isEmpty()) {
                     trackAdapter.submitList(emptyList())
                     viewModel.loadHistory()
+                    updateHistoryVisibility()
                 } else {
-                    handler.postDelayed({
-                        viewModel.searchDebounced(query)
-                    }, SearchViewModel.SEARCH_DELAY)
+                    searchJob = coroutineScope.launch {
+                        delay(SearchViewModel.SEARCH_DELAY)
+                        if (isActive) {
+                            viewModel.searchDebounced(query)
+                        }
+                    }
                 }
             }
         })
-
-        binding.editTextSearch.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus && binding.editTextSearch.text.isNullOrEmpty()) {
-                viewModel.loadHistory()
-            }
-        }
     }
 
     private fun setupButtons() {
@@ -129,43 +137,62 @@ class SearchFragment : Fragment() {
             binding.editTextSearch.requestFocus()
             trackAdapter.submitList(emptyList())
             viewModel.loadHistory()
+            updateHistoryVisibility()
         }
 
         binding.clearButtonSearchHistory.setOnClickListener {
-            viewModel.clearHistory()
+            coroutineScope.launch {
+                viewModel.clearHistory()
+            }
         }
 
         binding.refreshButton.setOnClickListener {
-            viewModel.searchDebounced(binding.editTextSearch.text.toString())
+            coroutineScope.launch {
+                viewModel.searchDebounced(binding.editTextSearch.text.toString())
+            }
         }
     }
 
     private fun observeViewModel() {
-        viewModel.searchState.observe(viewLifecycleOwner) { state ->
-            when (state) {
-                is SearchState.Loading -> showLoading()
-                is SearchState.Content -> showSearchResults(state.tracks)
-                is SearchState.Empty -> showEmptyResults()
-                is SearchState.Error -> handleSearchError(state.throwable)
+        coroutineScope.launch {
+            viewModel.searchState.collect { state ->
+                when (state) {
+                    is SearchState.Initial -> {
+                        binding.progressBar.isVisible = false
+                        binding.placeholderNoResults.isVisible = false
+                        binding.placeholderNoInternet.isVisible = false
+                        updateHistoryVisibility()
+                    }
+                    is SearchState.Loading -> showLoading()
+                    is SearchState.Content -> showSearchResults(state.tracks)
+                    is SearchState.Empty -> showEmptyResults()
+                    is SearchState.Error -> handleSearchError(state.throwable)
+                }
             }
         }
 
-        viewModel.historyState.observe(viewLifecycleOwner) { history ->
-            historyAdapter.submitList(history)
-            updateHistoryVisibility()
+        coroutineScope.launch {
+            viewModel.historyState.collect { history ->
+                withContext(Dispatchers.Main) {
+                    historyAdapter.submitList(history)
+                    updateHistoryVisibility()
+                }
+            }
         }
     }
 
     private fun onTrackClick(track: Track) {
         startActivity(
-            Intent(
-                requireContext(), AudioPlayerActivity::class.java).apply {
-            putExtra(KEY_TRACK, TrackUi(track))
-        })
+            Intent(requireContext(), AudioPlayerActivity::class.java).apply {
+                putExtra(KEY_TRACK, TrackUi(track))
+            }
+        )
     }
 
     private fun onAddToHistoryClick(track: Track) {
-        viewModel.addToHistory(track)
+        coroutineScope.launch {
+            viewModel.addToHistory(track)
+        }
     }
 
     private fun showLoading() {

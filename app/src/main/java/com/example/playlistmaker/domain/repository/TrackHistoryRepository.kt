@@ -3,8 +3,8 @@ package com.example.playlistmaker.domain.repository
 import com.example.playlistmaker.domain.model.Track
 
 interface TrackHistoryRepository {
-    fun addTrack(track: Track)
-    fun getHistory() : List<Track>
-    fun clearHistory()
-    fun saveHistory(history: List<Track>)
+   suspend fun addTrack(track: Track)
+   suspend fun getHistory() : List<Track>
+   suspend fun clearHistory()
+   suspend fun saveHistory(history: List<Track>)
 }

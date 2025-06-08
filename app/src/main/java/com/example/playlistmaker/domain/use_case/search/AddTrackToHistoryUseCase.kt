@@ -5,7 +5,7 @@ import com.example.playlistmaker.domain.repository.TrackHistoryRepository
 
 class AddTrackToHistoryUseCase(private val trackHistoryRepository: TrackHistoryRepository) {
 
-    operator fun invoke(track: Track) {
+   suspend operator fun invoke(track: Track) {
         trackHistoryRepository.addTrack(track)
     }
 }

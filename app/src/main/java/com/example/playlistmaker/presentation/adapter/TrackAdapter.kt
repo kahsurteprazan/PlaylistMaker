@@ -2,12 +2,16 @@ package com.example.playlistmaker.presentation.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.playlistmaker.presentation.util.ClickDebounce
 import com.example.playlistmaker.R
 import com.example.playlistmaker.domain.model.Track
 import com.example.playlistmaker.presentation.viewholder.TrackViewHolder
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 
 class TrackAdapter(
     private val onItemClickListener: (Track) -> Unit,
@@ -28,9 +32,16 @@ class TrackAdapter(
         holder.bind(item)
 
         holder.itemView.setOnClickListener {
-            if (clickDebounce.clickDebounce()) {
-                onItemClickListener(item)
-                onAddToHistoryClickListener(item)
+
+            onItemClickListener(item)
+
+            holder.itemView.context?.let { context ->
+                val scope = (context as? LifecycleOwner)?.lifecycleScope ?: MainScope()
+                scope.launch {
+                    if (clickDebounce.clickDebounce()) {
+                        onAddToHistoryClickListener(item)
+                    }
+                }
             }
         }
     }

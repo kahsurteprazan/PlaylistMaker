@@ -4,8 +4,7 @@ import com.example.playlistmaker.domain.model.Track
 import com.example.playlistmaker.domain.repository.SearchRepository
 
 class SearchTracksUseCase(private val searchRepository: SearchRepository) {
-
-    fun search(query: String, callback: (Result<List<Track>>) -> Unit) {
-        searchRepository.search(query, callback)
+    suspend fun search(query: String): Result<List<Track>> {
+        return searchRepository.search(query)
     }
 }

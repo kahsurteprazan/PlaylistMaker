@@ -17,7 +17,7 @@ class TrackHistoryRepositoryImpl(private val sharedPreferences: SharedPreference
 
     private val gson = Gson()
 
-    override fun addTrack(track: Track) {
+    override suspend fun addTrack(track: Track) {
         val history = getHistory().toMutableList()
         history.removeIf {
             Log.d("SearchHistory", "Removing track with ID: ${it.trackId}")
@@ -32,7 +32,7 @@ class TrackHistoryRepositoryImpl(private val sharedPreferences: SharedPreference
         saveHistory(history)
     }
 
-    override fun getHistory(): List<Track> {
+    override suspend fun getHistory(): List<Track> {
         val json = sharedPreferences.getString(HISTORY_KEY, null)
         Log.d("SearchHistory", "Loaded history JSON: $json")
         val type = object : TypeToken<List<Track>>() {}.type
@@ -40,7 +40,7 @@ class TrackHistoryRepositoryImpl(private val sharedPreferences: SharedPreference
     }
 
 
-    override fun clearHistory() {
+    override suspend fun clearHistory() {
         val historyJson = sharedPreferences.getString(HISTORY_KEY, "[]")
         Log.d("History", "Loaded history before clear: $historyJson")
         val editor = sharedPreferences.edit()
@@ -49,7 +49,7 @@ class TrackHistoryRepositoryImpl(private val sharedPreferences: SharedPreference
     }
 
 
-    override fun saveHistory(history: List<Track>) {
+    override suspend fun saveHistory(history: List<Track>) {
         val json = gson.toJson(history)
         Log.d("SearchHistory", "Saving history JSON: $json")
         sharedPreferences.edit().putString(HISTORY_KEY, json).apply()

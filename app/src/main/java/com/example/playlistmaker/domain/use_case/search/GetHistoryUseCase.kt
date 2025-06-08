@@ -5,7 +5,7 @@ import com.example.playlistmaker.domain.repository.TrackHistoryRepository
 
 class GetHistoryUseCase(private val trackHistoryRepository: TrackHistoryRepository) {
 
-    operator fun invoke() : List<Track> {
+    suspend  operator fun invoke() : List<Track> {
        return trackHistoryRepository.getHistory()
     }
 }
