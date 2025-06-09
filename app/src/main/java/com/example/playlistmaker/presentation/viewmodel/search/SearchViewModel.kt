@@ -8,10 +8,11 @@ import com.example.playlistmaker.domain.use_case.search.ClearHistoryUseCase
 import com.example.playlistmaker.domain.use_case.search.GetHistoryUseCase
 import com.example.playlistmaker.domain.use_case.search.SearchTracksUseCase
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 
 class SearchViewModel(
@@ -28,61 +29,73 @@ class SearchViewModel(
     val historyState: StateFlow<List<Track>> = _historyState
 
     private val _searchQuery = MutableStateFlow("")
-
     val searchQuery: StateFlow<String> = _searchQuery
 
     private var searchJob: Job? = null
+
+    init {
+        observeSearchQuery()
+        observeHistory()
+    }
 
     fun updateSearchQuery(query: String) {
         _searchQuery.value = query
     }
 
-    fun searchDebounced(query: String) {
-        searchJob?.cancel()
-
-        if (query.isEmpty()) {
-            _searchState.value = SearchState.Empty
-            loadHistory()
-            return
-        }
-
-        searchJob = viewModelScope.launch {
-            _searchState.value = SearchState.Loading
-            delay(SEARCH_DELAY)
-
-            if (!isActive) return@launch
-
-            searchTracksUseCase.search(query)
-                .onSuccess { tracks ->
-                    _searchState.value = if (tracks.isNotEmpty()) {
-                        SearchState.Content(tracks)
+    private fun observeSearchQuery() {
+        viewModelScope.launch {
+            _searchQuery
+                .debounce(SEARCH_DELAY)
+                .filter { it.isNotEmpty() }
+                .collect { query ->
+                    if (query.isEmpty()) {
+                        _searchState.value = SearchState.Empty
                     } else {
-                        SearchState.Empty
+                        performSearch(query)
                     }
-                }
-                .onFailure { e ->
-                    _searchState.value = SearchState.Error(e)
                 }
         }
     }
 
-    fun loadHistory() {
+    private fun performSearch(query: String) {
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            _searchState.value = SearchState.Loading
+            searchTracksUseCase(query)
+                .collect { result ->
+                    result.onSuccess { tracks ->
+                        _searchState.value = if (tracks.isNotEmpty()) {
+                            SearchState.Content(tracks)
+                        } else {
+                            SearchState.Empty
+                        }
+                    }.onFailure { e ->
+                        _searchState.value = SearchState.Error(e)
+                    }
+                }
+        }
+    }
+
+    private fun observeHistory() {
         viewModelScope.launch {
-            _historyState.value = getHistoryUseCase()
+            getHistoryUseCase()
+                .distinctUntilChanged()
+                .collect { history ->
+                    _historyState.value = history
+                }
         }
     }
 
     fun addToHistory(track: Track) {
         viewModelScope.launch {
-            addTrackToHistoryUseCase(track)
-            loadHistory()
+            addTrackToHistoryUseCase(track).collect {
+            }
         }
     }
 
     fun clearHistory() {
         viewModelScope.launch {
-            clearHistoryUseCase()
-            loadHistory()
+            clearHistoryUseCase().collect {}
         }
     }
 
@@ -90,5 +103,6 @@ class SearchViewModel(
         const val SEARCH_DELAY = 2000L
     }
 }
+
 
 

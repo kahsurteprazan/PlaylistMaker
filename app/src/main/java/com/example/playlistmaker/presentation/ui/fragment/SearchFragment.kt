@@ -2,8 +2,6 @@ package com.example.playlistmaker.presentation.ui.fragment
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -11,8 +9,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.playlistmaker.databinding.FragmentSearchBinding
 import com.example.playlistmaker.domain.model.Track
@@ -23,13 +22,8 @@ import com.example.playlistmaker.presentation.viewmodel.search.SearchState
 import com.example.playlistmaker.presentation.viewmodel.search.SearchViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancelChildren
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.io.IOException
 
@@ -41,14 +35,8 @@ class SearchFragment : Fragment() {
     private val viewModel: SearchViewModel by viewModel()
     private lateinit var trackAdapter: TrackAdapter
     private lateinit var historyAdapter: TrackAdapter
-    private var searchJob: Job? = null
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        viewModel.loadHistory()
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -71,7 +59,6 @@ class SearchFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        coroutineScope.coroutineContext.cancelChildren()
         _binding = null
     }
 
@@ -104,26 +91,16 @@ class SearchFragment : Fragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                searchJob?.cancel()
                 binding.clearButtonSearch.isVisible = !s.isNullOrEmpty()
             }
 
             override fun afterTextChanged(s: Editable?) {
                 val query = s?.toString() ?: ""
-                binding.placeholderNoInternet.isVisible = false
                 viewModel.updateSearchQuery(query)
 
                 if (query.isEmpty()) {
                     trackAdapter.submitList(emptyList())
-                    viewModel.loadHistory()
                     updateHistoryVisibility()
-                } else {
-                    searchJob = coroutineScope.launch {
-                        delay(SearchViewModel.SEARCH_DELAY)
-                        if (isActive) {
-                            viewModel.searchDebounced(query)
-                        }
-                    }
                 }
             }
         })
@@ -136,7 +113,6 @@ class SearchFragment : Fragment() {
             binding.placeholderNoInternet.isVisible = false
             binding.editTextSearch.requestFocus()
             trackAdapter.submitList(emptyList())
-            viewModel.loadHistory()
             updateHistoryVisibility()
         }
 
@@ -147,37 +123,45 @@ class SearchFragment : Fragment() {
         }
 
         binding.refreshButton.setOnClickListener {
-            coroutineScope.launch {
-                viewModel.searchDebounced(binding.editTextSearch.text.toString())
+            val query = binding.editTextSearch.text.toString()
+            if (query.isNotEmpty()) {
+                viewModel.updateSearchQuery(query)
             }
         }
     }
 
     private fun observeViewModel() {
-        coroutineScope.launch {
-            viewModel.searchState.collect { state ->
-                when (state) {
-                    is SearchState.Initial -> {
-                        binding.progressBar.isVisible = false
-                        binding.placeholderNoResults.isVisible = false
-                        binding.placeholderNoInternet.isVisible = false
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.searchState.collect { state ->
+                        when (state) {
+                            is SearchState.Initial -> showInitialState()
+                            SearchState.Loading -> showLoading()
+                            is SearchState.Content -> showSearchResults(state.tracks)
+                            SearchState.Empty -> showEmptyResults()
+                            is SearchState.Error -> handleSearchError(state.throwable)
+                        }
+                    }
+                }
+
+                launch {
+                    viewModel.historyState.collect { history ->
+                        historyAdapter.submitList(history)
                         updateHistoryVisibility()
                     }
-                    is SearchState.Loading -> showLoading()
-                    is SearchState.Content -> showSearchResults(state.tracks)
-                    is SearchState.Empty -> showEmptyResults()
-                    is SearchState.Error -> handleSearchError(state.throwable)
                 }
             }
         }
+    }
 
-        coroutineScope.launch {
-            viewModel.historyState.collect { history ->
-                withContext(Dispatchers.Main) {
-                    historyAdapter.submitList(history)
-                    updateHistoryVisibility()
-                }
-            }
+    private fun showInitialState() {
+        binding.apply {
+            progressBar.isVisible = false
+            recyclerView.isVisible = false
+            placeholderNoResults.isVisible = false
+            placeholderNoInternet.isVisible = false
+            updateHistoryVisibility()
         }
     }
 
@@ -190,7 +174,7 @@ class SearchFragment : Fragment() {
     }
 
     private fun onAddToHistoryClick(track: Track) {
-        coroutineScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             viewModel.addToHistory(track)
         }
     }
@@ -237,7 +221,7 @@ class SearchFragment : Fragment() {
     }
 
     private fun updateHistoryVisibility() {
-        val hasHistory = viewModel.historyState.value?.isNotEmpty() == true
+        val hasHistory = viewModel.historyState.value.isNotEmpty()
         val hasSearchQuery = !binding.editTextSearch.text.isNullOrEmpty()
 
         binding.historySearch.isVisible = hasHistory && !hasSearchQuery

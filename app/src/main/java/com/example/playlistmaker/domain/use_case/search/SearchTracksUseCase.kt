@@ -2,9 +2,8 @@ package com.example.playlistmaker.domain.use_case.search
 
 import com.example.playlistmaker.domain.model.Track
 import com.example.playlistmaker.domain.repository.SearchRepository
+import kotlinx.coroutines.flow.Flow
 
-class SearchTracksUseCase(private val searchRepository: SearchRepository) {
-    suspend fun search(query: String): Result<List<Track>> {
-        return searchRepository.search(query)
-    }
+class SearchTracksUseCase(private val repository: SearchRepository) {
+    suspend operator fun invoke(query: String): Flow<Result<List<Track>>> = repository.search(query)
 }

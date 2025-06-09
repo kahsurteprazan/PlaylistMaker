@@ -1,10 +1,11 @@
 package com.example.playlistmaker.domain.repository
 
 import com.example.playlistmaker.domain.model.Track
+import kotlinx.coroutines.flow.Flow
 
 interface TrackHistoryRepository {
-   suspend fun addTrack(track: Track)
-   suspend fun getHistory() : List<Track>
-   suspend fun clearHistory()
-   suspend fun saveHistory(history: List<Track>)
+   fun addTrack(track: Track): Flow<Unit>
+   fun getHistory(): Flow<List<Track>>
+   fun clearHistory(): Flow<Unit>
+   fun saveHistory(history: List<Track>): Flow<Unit>
 }

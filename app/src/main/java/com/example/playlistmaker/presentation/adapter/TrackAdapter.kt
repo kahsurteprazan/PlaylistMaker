@@ -28,21 +28,12 @@ class TrackAdapter(
     }
 
     override fun onBindViewHolder(holder: TrackViewHolder, position: Int) {
-        val item = tracks[position]
-        holder.bind(item)
+        val track = tracks[position]
+        holder.bind(track)
 
         holder.itemView.setOnClickListener {
-
-            onItemClickListener(item)
-
-            holder.itemView.context?.let { context ->
-                val scope = (context as? LifecycleOwner)?.lifecycleScope ?: MainScope()
-                scope.launch {
-                    if (clickDebounce.clickDebounce()) {
-                        onAddToHistoryClickListener(item)
-                    }
-                }
-            }
+            onItemClickListener(track)
+            onAddToHistoryClickListener(track)
         }
     }
 
