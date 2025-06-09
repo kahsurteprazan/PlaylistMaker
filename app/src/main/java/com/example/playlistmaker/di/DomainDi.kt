@@ -20,10 +20,10 @@ val domainModule = module {
     factory { PlayAudioInteract(get()) }
     factory { StartAudioUseCase(get()) }
     factory { PauseAudioUseCase(get()) }
-    factory { SearchTracksUseCase(get()) }
-    factory { AddTrackToHistoryUseCase(get()) }
-    factory { GetHistoryUseCase(get()) }
-    factory { ClearHistoryUseCase(get()) }
+    factory<SearchTracksUseCase> { SearchTracksUseCase(get()) }
+    factory<AddTrackToHistoryUseCase> { AddTrackToHistoryUseCase(get()) }
+    factory<GetHistoryUseCase> { GetHistoryUseCase(get()) }
+    factory<ClearHistoryUseCase> { ClearHistoryUseCase(get()) }
     factory { SaveHistoryUseCase(get()) }
     factory { ThemeInteract(get()) }
     factory { (activity: Activity) -> ShareAppUseCase(ShareAppRepositoryImpl(activity)) }

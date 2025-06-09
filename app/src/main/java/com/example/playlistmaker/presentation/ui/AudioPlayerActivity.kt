@@ -4,23 +4,21 @@ import android.annotation.SuppressLint
 import android.content.res.Resources
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isGone
-import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.example.playlistmaker.R
-import com.example.playlistmaker.domain.model.Track
 import com.example.playlistmaker.databinding.ActivityAudioPlayerBinding
+import com.example.playlistmaker.domain.model.Track
 import com.example.playlistmaker.domain.repository.AudioPlayerRepository
 import com.example.playlistmaker.presentation.mappers.TrackMapper
 import com.example.playlistmaker.presentation.model.TrackUi
 import com.example.playlistmaker.presentation.viewmodel.audioPlayer.AudioPlayerViewModel
+import com.example.playlistmaker.presentation.viewmodel.audioPlayer.PlayerState
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
@@ -39,22 +37,7 @@ class AudioPlayerActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityAudioPlayerBinding
     private lateinit var timerTextView: TextView
-    private lateinit var play: ImageButton
-
-    private val handler = Handler(Looper.getMainLooper())
-
-    private val updateRunnable = object : Runnable {
-        override fun run() {
-            if (viewModel.playerState.value == AudioPlayerViewModel.STATE_PLAYING) {
-                val currentPosition = viewModel.getCurrentPosition()
-                timerTextView.text = SimpleDateFormat(
-                    "m:ss",
-                    Locale.getDefault()
-                ).format(currentPosition)
-            }
-            handler.postDelayed(this, 300)
-        }
-    }
+    private lateinit var playButton: ImageButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,19 +51,17 @@ class AudioPlayerActivity : AppCompatActivity() {
 
     private fun initViews() {
         timerTextView = binding.trackTimePlayedAudioPlayer
-        play = binding.btnPlayAudioPlayer
+        playButton = binding.btnPlayAudioPlayer
     }
 
     private fun setupObservers() {
-        viewModel.playButtonResId.observe(this) { resId ->
-            play.setImageResource(resId)
-        }
-
         viewModel.playerState.observe(this) { state ->
-            when (state) {
-                AudioPlayerViewModel.STATE_PLAYING -> handler.post(updateRunnable)
-                else -> handler.removeCallbacks(updateRunnable)
-            }
+            playButton.isEnabled = state.isPlayButtonEnabled
+            playButton.setImageResource(
+                if (state is PlayerState.Playing) R.drawable.ic_pause
+                else R.drawable.ic_play
+            )
+            timerTextView.text = state.progress
         }
 
         viewModel.errorMessage.observe(this) { message ->
@@ -97,9 +78,10 @@ class AudioPlayerActivity : AppCompatActivity() {
             @Suppress("DEPRECATION")
             intent.getParcelableExtra(TRACK_KEY)
         } ?: return finish()
-        val track = TrackMapper.mapToDomain(trackUi)
 
-        track.let { setupTrackInfo(it) }
+        val track = TrackMapper.mapToDomain(trackUi)
+        setupTrackInfo(track)
+        viewModel.preparePlayer(track.previewUrl.toString())
     }
 
     private fun setupTrackInfo(track: Track) {
@@ -126,25 +108,17 @@ class AudioPlayerActivity : AppCompatActivity() {
                 .placeholder(R.drawable.placeholder_image)
                 .error(R.drawable.placeholder_image)
                 .into(trackArtAudioPlayer)
-
-            viewModel.preparePlayer(track.previewUrl.toString())
         }
     }
 
     private fun setupClickListeners() {
-        play.setOnClickListener { viewModel.playbackControl() }
+        playButton.setOnClickListener { viewModel.playbackControl() }
         binding.btnBackAudioPlayer.setOnClickListener { finish() }
     }
 
     override fun onPause() {
         super.onPause()
-        handler.removeCallbacks(updateRunnable)
         viewModel.pause()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        handler.removeCallbacks(updateRunnable)
     }
 
     @SuppressLint("DefaultLocale")
@@ -164,5 +138,4 @@ class AudioPlayerActivity : AppCompatActivity() {
     private fun Int.toPx(): Int {
         return (this * Resources.getSystem().displayMetrics.density).toInt()
     }
-
 }
