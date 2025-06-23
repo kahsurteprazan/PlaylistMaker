@@ -1,13 +1,19 @@
 package com.example.playlistmaker.presentation.viewmodel.search
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.playlistmaker.domain.model.Track
 import com.example.playlistmaker.domain.use_case.search.AddTrackToHistoryUseCase
 import com.example.playlistmaker.domain.use_case.search.ClearHistoryUseCase
 import com.example.playlistmaker.domain.use_case.search.GetHistoryUseCase
 import com.example.playlistmaker.domain.use_case.search.SearchTracksUseCase
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.launch
 
 class SearchViewModel(
     private val searchTracksUseCase: SearchTracksUseCase,
@@ -16,55 +22,87 @@ class SearchViewModel(
     private val clearHistoryUseCase: ClearHistoryUseCase
 ) : ViewModel() {
 
-    private val _searchState = MutableLiveData<SearchState>()
-    val searchState: LiveData<SearchState> = _searchState
+    private val _searchState = MutableStateFlow<SearchState>(SearchState.Initial)
+    val searchState: StateFlow<SearchState> = _searchState
 
-    private val _historyState = MutableLiveData<List<Track>>()
-    val historyState: LiveData<List<Track>> = _historyState
+    private val _historyState = MutableStateFlow<List<Track>>(emptyList())
+    val historyState: StateFlow<List<Track>> = _historyState
 
-    private val _searchQuery = MutableLiveData<String>()
-    val searchQuery: LiveData<String> = _searchQuery
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery
+
+    private var searchJob: Job? = null
+
+    init {
+        observeSearchQuery()
+        observeHistory()
+    }
 
     fun updateSearchQuery(query: String) {
         _searchQuery.value = query
     }
 
-    fun clearSearchState() {
-        _searchQuery.value = ""
+    private fun observeSearchQuery() {
+        viewModelScope.launch {
+            _searchQuery
+                .debounce(SEARCH_DELAY)
+                .filter { it.isNotEmpty() }
+                .collect { query ->
+                    if (query.isEmpty()) {
+                        _searchState.value = SearchState.Empty
+                    } else {
+                        performSearch(query)
+                    }
+                }
+        }
     }
 
-    fun searchDebounced(query: String) {
-        _searchState.value = SearchState.Loading
-        searchTracksUseCase.search(query) { result ->
-            result.onSuccess { tracks ->
-                _searchState.value = if (tracks.isNotEmpty()) {
-                    SearchState.Content(tracks)
-                } else {
-                    SearchState.Empty
+    private fun performSearch(query: String) {
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            _searchState.value = SearchState.Loading
+            searchTracksUseCase(query)
+                .collect { result ->
+                    result.onSuccess { tracks ->
+                        _searchState.value = if (tracks.isNotEmpty()) {
+                            SearchState.Content(tracks)
+                        } else {
+                            SearchState.Empty
+                        }
+                    }.onFailure { e ->
+                        _searchState.value = SearchState.Error(e)
+                    }
                 }
-            }.onFailure {
-                _searchState.value = SearchState.Error(it)
+        }
+    }
+
+    private fun observeHistory() {
+        viewModelScope.launch {
+            getHistoryUseCase()
+                .distinctUntilChanged()
+                .collect { history ->
+                    _historyState.value = history
+                }
+        }
+    }
+
+    fun addToHistory(track: Track) {
+        viewModelScope.launch {
+            addTrackToHistoryUseCase(track).collect {
             }
         }
     }
 
-    fun loadHistory() {
-        _historyState.value = getHistoryUseCase()
-    }
-
-    fun addToHistory(track: Track) {
-        addTrackToHistoryUseCase(track)
-        loadHistory()
-    }
-
     fun clearHistory() {
-        clearHistoryUseCase()
-        loadHistory()
+        viewModelScope.launch {
+            clearHistoryUseCase().collect {}
+        }
     }
 
     companion object {
         const val SEARCH_DELAY = 2000L
     }
 }
+
 
 

@@ -2,8 +2,6 @@ package com.example.playlistmaker.presentation.ui.fragment
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -11,6 +9,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.playlistmaker.databinding.FragmentSearchBinding
 import com.example.playlistmaker.domain.model.Track
@@ -19,11 +20,14 @@ import com.example.playlistmaker.presentation.model.TrackUi
 import com.example.playlistmaker.presentation.ui.AudioPlayerActivity
 import com.example.playlistmaker.presentation.viewmodel.search.SearchState
 import com.example.playlistmaker.presentation.viewmodel.search.SearchViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.io.IOException
 
 class SearchFragment : Fragment() {
-
     private var _binding: FragmentSearchBinding? = null
     private val binding: FragmentSearchBinding
         get() = _binding ?: throw RuntimeException("FragmentSearchBinding = null")
@@ -31,13 +35,8 @@ class SearchFragment : Fragment() {
     private val viewModel: SearchViewModel by viewModel()
     private lateinit var trackAdapter: TrackAdapter
     private lateinit var historyAdapter: TrackAdapter
-    private val handler = Handler(Looper.getMainLooper())
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        viewModel.loadHistory()
-    }
+    private val coroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -48,7 +47,6 @@ class SearchFragment : Fragment() {
         return binding.root
     }
 
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupAdapters()
@@ -56,10 +54,7 @@ class SearchFragment : Fragment() {
         setupSearchInput()
         setupButtons()
         observeViewModel()
-        viewModel.clearSearchState()
-        binding.editTextSearch.post {
-            binding.editTextSearch.requestFocus()
-        }
+        updateHistoryVisibility()
     }
 
     override fun onDestroyView() {
@@ -91,34 +86,24 @@ class SearchFragment : Fragment() {
 
     private fun setupSearchInput() {
         binding.editTextSearch.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                binding.placeholderNoResults.isVisible = false
+            }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                handler.removeCallbacksAndMessages(null)
                 binding.clearButtonSearch.isVisible = !s.isNullOrEmpty()
             }
 
             override fun afterTextChanged(s: Editable?) {
                 val query = s?.toString() ?: ""
-                binding.placeholderNoInternet.isVisible = false
                 viewModel.updateSearchQuery(query)
 
                 if (query.isEmpty()) {
                     trackAdapter.submitList(emptyList())
-                    viewModel.loadHistory()
-                } else {
-                    handler.postDelayed({
-                        viewModel.searchDebounced(query)
-                    }, SearchViewModel.SEARCH_DELAY)
+                    updateHistoryVisibility()
                 }
             }
         })
-
-        binding.editTextSearch.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus && binding.editTextSearch.text.isNullOrEmpty()) {
-                viewModel.loadHistory()
-            }
-        }
     }
 
     private fun setupButtons() {
@@ -128,44 +113,70 @@ class SearchFragment : Fragment() {
             binding.placeholderNoInternet.isVisible = false
             binding.editTextSearch.requestFocus()
             trackAdapter.submitList(emptyList())
-            viewModel.loadHistory()
+            updateHistoryVisibility()
         }
 
         binding.clearButtonSearchHistory.setOnClickListener {
-            viewModel.clearHistory()
+            coroutineScope.launch {
+                viewModel.clearHistory()
+            }
         }
 
         binding.refreshButton.setOnClickListener {
-            viewModel.searchDebounced(binding.editTextSearch.text.toString())
+            val query = binding.editTextSearch.text.toString()
+            if (query.isNotEmpty()) {
+                viewModel.updateSearchQuery(query)
+            }
         }
     }
 
     private fun observeViewModel() {
-        viewModel.searchState.observe(viewLifecycleOwner) { state ->
-            when (state) {
-                is SearchState.Loading -> showLoading()
-                is SearchState.Content -> showSearchResults(state.tracks)
-                is SearchState.Empty -> showEmptyResults()
-                is SearchState.Error -> handleSearchError(state.throwable)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.searchState.collect { state ->
+                        when (state) {
+                            is SearchState.Initial -> showInitialState()
+                            SearchState.Loading -> showLoading()
+                            is SearchState.Content -> showSearchResults(state.tracks)
+                            SearchState.Empty -> showEmptyResults()
+                            is SearchState.Error -> handleSearchError(state.throwable)
+                        }
+                    }
+                }
+
+                launch {
+                    viewModel.historyState.collect { history ->
+                        historyAdapter.submitList(history)
+                        updateHistoryVisibility()
+                    }
+                }
             }
         }
+    }
 
-        viewModel.historyState.observe(viewLifecycleOwner) { history ->
-            historyAdapter.submitList(history)
+    private fun showInitialState() {
+        binding.apply {
+            progressBar.isVisible = false
+            recyclerView.isVisible = false
+            placeholderNoResults.isVisible = false
+            placeholderNoInternet.isVisible = false
             updateHistoryVisibility()
         }
     }
 
     private fun onTrackClick(track: Track) {
         startActivity(
-            Intent(
-                requireContext(), AudioPlayerActivity::class.java).apply {
-            putExtra(KEY_TRACK, TrackUi(track))
-        })
+            Intent(requireContext(), AudioPlayerActivity::class.java).apply {
+                putExtra(KEY_TRACK, TrackUi(track))
+            }
+        )
     }
 
     private fun onAddToHistoryClick(track: Track) {
-        viewModel.addToHistory(track)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.addToHistory(track)
+        }
     }
 
     private fun showLoading() {
@@ -210,7 +221,7 @@ class SearchFragment : Fragment() {
     }
 
     private fun updateHistoryVisibility() {
-        val hasHistory = viewModel.historyState.value?.isNotEmpty() == true
+        val hasHistory = viewModel.historyState.value.isNotEmpty()
         val hasSearchQuery = !binding.editTextSearch.text.isNullOrEmpty()
 
         binding.historySearch.isVisible = hasHistory && !hasSearchQuery

@@ -6,54 +6,79 @@ import com.example.playlistmaker.domain.model.Track
 import com.example.playlistmaker.domain.repository.TrackHistoryRepository
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.flow
 
-class TrackHistoryRepositoryImpl(private val sharedPreferences: SharedPreferences) :
-    TrackHistoryRepository {
+class TrackHistoryRepositoryImpl(
+    private val sharedPreferences: SharedPreferences
+) : TrackHistoryRepository {
 
     companion object {
-        const val HISTORY_KEY = "search_history"
-        const val MAX_HISTORY_SIZE = 10
+        private const val HISTORY_KEY = "search_history"
+        private const val MAX_HISTORY_SIZE = 10
     }
 
     private val gson = Gson()
+    private val historyUpdates = MutableSharedFlow<Unit>(replay = 1)
 
-    override fun addTrack(track: Track) {
-        val history = getHistory().toMutableList()
-        history.removeIf {
-            Log.d("SearchHistory", "Removing track with ID: ${it.trackId}")
-            it.trackId == track.trackId
+    override fun addTrack(track: Track): Flow<Unit> = flow {
+        val currentHistory = getHistorySync().toMutableList()
+
+        currentHistory.removeAll { it.trackId == track.trackId }
+
+        currentHistory.add(0, track)
+
+        if (currentHistory.size > MAX_HISTORY_SIZE) {
+            currentHistory.subList(MAX_HISTORY_SIZE, currentHistory.size).clear()
         }
-        Log.d("SearchHistory", "After removal: $history")
-        history.add(0, track)
-        Log.d("SearchHistory", "After adding new track: $history")
-        if (history.size > MAX_HISTORY_SIZE) {
-            history.subList(MAX_HISTORY_SIZE, history.size).clear()
+
+        saveHistorySync(currentHistory)
+        emit(Unit)
+        historyUpdates.emit(Unit)
+    }
+
+    override fun getHistory(): Flow<List<Track>> = flow {
+        emit(getHistorySync())
+
+        historyUpdates.collect {
+            emit(getHistorySync())
         }
-        saveHistory(history)
     }
 
-    override fun getHistory(): List<Track> {
-        val json = sharedPreferences.getString(HISTORY_KEY, null)
-        Log.d("SearchHistory", "Loaded history JSON: $json")
-        val type = object : TypeToken<List<Track>>() {}.type
-        return gson.fromJson(json, type) ?: emptyList()
+    override fun clearHistory(): Flow<Unit> = flow {
+        sharedPreferences.edit()
+            .remove(HISTORY_KEY)
+            .apply()
+        emit(Unit)
+        historyUpdates.emit(Unit)
     }
 
-
-    override fun clearHistory() {
-        val historyJson = sharedPreferences.getString(HISTORY_KEY, "[]")
-        Log.d("History", "Loaded history before clear: $historyJson")
-        val editor = sharedPreferences.edit()
-        editor.remove(HISTORY_KEY).apply()
-        Log.d("History", "History cleared")
+    override fun saveHistory(history: List<Track>): Flow<Unit> = flow {
+        saveHistorySync(history)
+        emit(Unit)
+        historyUpdates.emit(Unit)
     }
 
-
-    override fun saveHistory(history: List<Track>) {
-        val json = gson.toJson(history)
-        Log.d("SearchHistory", "Saving history JSON: $json")
-        sharedPreferences.edit().putString(HISTORY_KEY, json).apply()
+    private fun getHistorySync(): List<Track> {
+        return try {
+            val json = sharedPreferences.getString(HISTORY_KEY, null) ?: return emptyList()
+            val type = object : TypeToken<List<Track>>() {}.type
+            gson.fromJson<List<Track>>(json, type) ?: emptyList()
+        } catch (e: Exception) {
+            Log.e("TrackHistoryRepo", "Error reading history", e)
+            emptyList()
+        }
     }
 
-
+    private fun saveHistorySync(history: List<Track>) {
+        try {
+            val json = gson.toJson(history)
+            sharedPreferences.edit()
+                .putString(HISTORY_KEY, json)
+                .apply()
+        } catch (e: Exception) {
+            Log.e("TrackHistoryRepo", "Error saving history", e)
+        }
+    }
 }
