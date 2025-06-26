@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.res.Resources
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
@@ -69,6 +70,14 @@ class AudioPlayerActivity : AppCompatActivity() {
                 Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
             }
         }
+        viewModel.currentTrack.observe(this) { track ->
+            track?.let {
+                binding.btnLikeAudioPlayer.setImageResource(
+                    if (it.isFavorite) R.drawable.ic_like
+                    else R.drawable.ic_unlike
+                )
+            }
+        }
     }
 
     private fun handleIntent() {
@@ -80,6 +89,8 @@ class AudioPlayerActivity : AppCompatActivity() {
         } ?: return finish()
 
         val track = TrackMapper.mapToDomain(trackUi)
+
+        viewModel.setTrack(track)
         setupTrackInfo(track)
         viewModel.preparePlayer(track.previewUrl.toString())
     }
@@ -96,6 +107,10 @@ class AudioPlayerActivity : AppCompatActivity() {
                 textViewRightAlbum.isGone = true
                 textViewLeftAlbum.isGone = true
             }
+            btnLikeAudioPlayer.setImageResource(
+                if (track.isFavorite) R.drawable.ic_like
+                else R.drawable.ic_unlike
+            )
 
             textViewRightYear.text = formatYearFromDate(track.releaseDate)
             textViewRightGenre.text = track.primaryGenreName
@@ -114,6 +129,14 @@ class AudioPlayerActivity : AppCompatActivity() {
     private fun setupClickListeners() {
         playButton.setOnClickListener { viewModel.playbackControl() }
         binding.btnBackAudioPlayer.setOnClickListener { finish() }
+        binding.btnLikeAudioPlayer.setOnClickListener {
+            Log.d("AudioPlayerUI", "Button clicked - calling VM")
+            try {
+                viewModel.onFavoriteClicked()
+            } catch (e: Exception) {
+                Log.e("AudioPlayerUI", "Error calling VM", e)
+            }
+        }
     }
 
     override fun onPause() {

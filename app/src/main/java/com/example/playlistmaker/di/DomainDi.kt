@@ -2,7 +2,11 @@ package com.example.playlistmaker.di
 
 import android.app.Activity
 import com.example.playlistmaker.data.repository.ContactSupportRepositoryImpl
+import com.example.playlistmaker.data.repository.LikedTracksRepositoryImpl
 import com.example.playlistmaker.data.repository.ShareAppRepositoryImpl
+import com.example.playlistmaker.domain.impl.LikedTracksInteractImpl
+import com.example.playlistmaker.domain.repository.LikedTracksRepository
+import com.example.playlistmaker.domain.use_case.media.LikedTracksInteract
 import com.example.playlistmaker.domain.use_case.player.PauseAudioUseCase
 import com.example.playlistmaker.domain.use_case.player.PlayAudioInteract
 import com.example.playlistmaker.domain.use_case.player.StartAudioUseCase
@@ -28,4 +32,17 @@ val domainModule = module {
     factory { ThemeInteract(get()) }
     factory { (activity: Activity) -> ShareAppUseCase(ShareAppRepositoryImpl(activity)) }
     factory { (activity: Activity) -> ContactSupportUseCase(ContactSupportRepositoryImpl(activity)) }
+
+    single<LikedTracksRepository> {
+        LikedTracksRepositoryImpl(
+            appDatabase = get(),
+            converter = get()
+        )
+    }
+
+    factory<LikedTracksInteract> {
+        LikedTracksInteractImpl(
+            likedTracksRepository = get()
+        )
+    }
 }

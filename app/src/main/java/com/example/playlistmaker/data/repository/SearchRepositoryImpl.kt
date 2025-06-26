@@ -1,19 +1,38 @@
 package com.example.playlistmaker.data.repository
 
+import com.example.playlistmaker.data.db.dao.TrackDao
 import com.example.playlistmaker.data.network.RetrofitClient
 import com.example.playlistmaker.domain.model.Track
 import com.example.playlistmaker.domain.repository.SearchRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.withContext
 
-class SearchRepositoryImpl : SearchRepository {
+class SearchRepositoryImpl(
+    private val trackDao: TrackDao
+) : SearchRepository {
+
     override suspend fun search(query: String): Flow<Result<List<Track>>> = flow {
         try {
+            println("Searching for: $query")
+
+            val likedTrackIds = withContext(Dispatchers.IO) {
+                trackDao.getLikedTrackIds().first()
+            }
+            println("Liked track IDs: $likedTrackIds")
+
             val response = RetrofitClient.api.search(query)
+            println("API response code: ${response.code()}")
             if (response.isSuccessful) {
                 val searchResponse = response.body()
+                println("Response body: $searchResponse")
                 if (searchResponse != null && searchResponse.results.isNotEmpty()) {
-                    emit(Result.success(searchResponse.results))
+                    val tracksWithFavorites = searchResponse.results.map { track ->
+                        track.copy(isFavorite = track.trackId in likedTrackIds)
+                    }
+                    emit(Result.success(tracksWithFavorites))
                 } else {
                     emit(Result.success(emptyList()))
                 }
@@ -21,6 +40,7 @@ class SearchRepositoryImpl : SearchRepository {
                 emit(Result.failure(Exception("Failed to fetch data")))
             }
         } catch (t: Throwable) {
+            println("Search error: ${t.message}")
             emit(Result.failure(t))
         }
     }

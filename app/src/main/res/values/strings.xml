@@ -27,4 +27,5 @@
     <string name="media_favorite_zaglushka">Ваша медиатека пуста</string>
     <string name="play">Play</string>
     <string name="pause">Pause</string>
+    <string name="new_playlist">Новый плейлист</string>
 </resources>

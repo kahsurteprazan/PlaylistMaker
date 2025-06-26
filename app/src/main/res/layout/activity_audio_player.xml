@@ -99,7 +99,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/btnPlayAudioPlayer"
         app:layout_constraintTop_toTopOf="@id/btnPlayAudioPlayer"
-        app:srcCompat="@drawable/ic_like" />
+        app:srcCompat="@drawable/ic_unlike"
+        />
 
     <TextView
         android:id="@+id/trackTimePlayedAudioPlayer"
