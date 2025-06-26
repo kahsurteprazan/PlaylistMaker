@@ -1,6 +1,11 @@
-package com.example.playlistmaker.domain.model
+package com.example.playlistmaker.data.db.entity
 
-data class Track(
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "liked_tracks")
+data class TrackEntity(
+    @PrimaryKey
     val trackId: Int,
     val trackName: String,
     val artistName: String,
@@ -11,8 +16,5 @@ data class Track(
     val primaryGenreName: String,
     val country: String,
     val previewUrl: String?,
-    var isFavorite: Boolean = false,
-    val addedDate: Long? = null
-) {
-    fun getCoverArtwork() = artworkUrl100.replaceAfterLast('/',"512x512bb.jpg")
-}
+    val addedDate: Long = System.currentTimeMillis()
+)

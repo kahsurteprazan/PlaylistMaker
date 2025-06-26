@@ -16,6 +16,8 @@ object TrackMapper {
         releaseDate= uiTrack.releaseDate,
         primaryGenreName= uiTrack.primaryGenreName,
         country= uiTrack.country,
-        previewUrl = uiTrack.previewUrl
+        previewUrl = uiTrack.previewUrl,
+        isFavorite = uiTrack.isFavorite,
+        addedDate = uiTrack.addedDate
     )
 }

@@ -10,8 +10,7 @@ import com.example.playlistmaker.presentation.util.ClickDebounce
 import com.example.playlistmaker.R
 import com.example.playlistmaker.domain.model.Track
 import com.example.playlistmaker.presentation.viewholder.TrackViewHolder
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
+
 
 class TrackAdapter(
     private val onItemClickListener: (Track) -> Unit,
