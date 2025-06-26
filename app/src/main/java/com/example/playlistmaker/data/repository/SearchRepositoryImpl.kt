@@ -16,18 +16,12 @@ class SearchRepositoryImpl(
 
     override suspend fun search(query: String): Flow<Result<List<Track>>> = flow {
         try {
-            println("Searching for: $query")
-
             val likedTrackIds = withContext(Dispatchers.IO) {
                 trackDao.getLikedTrackIds().first()
             }
-            println("Liked track IDs: $likedTrackIds")
-
             val response = RetrofitClient.api.search(query)
-            println("API response code: ${response.code()}")
             if (response.isSuccessful) {
                 val searchResponse = response.body()
-                println("Response body: $searchResponse")
                 if (searchResponse != null && searchResponse.results.isNotEmpty()) {
                     val tracksWithFavorites = searchResponse.results.map { track ->
                         track.copy(isFavorite = track.trackId in likedTrackIds)
@@ -40,7 +34,6 @@ class SearchRepositoryImpl(
                 emit(Result.failure(Exception("Failed to fetch data")))
             }
         } catch (t: Throwable) {
-            println("Search error: ${t.message}")
             emit(Result.failure(t))
         }
     }

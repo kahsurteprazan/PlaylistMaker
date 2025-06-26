@@ -19,9 +19,7 @@ class TrackDbConverter {
             country = track.country,
             previewUrl = track.previewUrl,
             addedDate = System.currentTimeMillis()
-        ).also {
-            Log.d("MAPPER", "Resulting Entity: $it")
-        }
+        )
     }
 
     fun mapFromEntity(entity: TrackEntity): Track {
@@ -38,9 +36,7 @@ class TrackDbConverter {
             previewUrl = entity.previewUrl,
             isFavorite = true,
             addedDate = entity.addedDate
-        ).also {
-            Log.d("MAPPER", "Resulting Track: $it")
-        }
+        )
     }
 
 }

@@ -1,6 +1,5 @@
 package com.example.playlistmaker.presentation.viewmodel.audioPlayer
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -42,31 +41,27 @@ class AudioPlayerViewModel(
             _currentTrack.value = track.copy(isFavorite = isLiked)
         }
     }
+
     fun onFavoriteClicked() {
-        Log.e("AudioPlayerVM", "Method entered")
         val track = _currentTrack.value ?: run {
-            Log.e("AudioPlayerVM", "Current track is null!")
             return
         }
 
         viewModelScope.launch {
-            Log.d("AudioPlayerVM", "Coroutine started")
             try {
-                Log.d("AudioPlayerVM", "Current favorite status: ${track.isFavorite}")
 
                 if (track.isFavorite) {
-                    Log.d("AudioPlayerVM", "Executing unlikeTrack")
+
                     likedTracksInteract.unlikeTrack(track)
                 } else {
-                    Log.d("AudioPlayerVM", "Executing likeTrack")
+
                     likedTracksInteract.likeTrack(track)
                 }
 
-                Log.d("AudioPlayerVM", "Updating UI state")
+
                 _currentTrack.value = track.copy(isFavorite = !track.isFavorite)
 
             } catch (e: Exception) {
-                Log.e("AudioPlayerVM", "Error in coroutine", e)
                 _errorMessage.value = "Ошибка: ${e.message}"
             }
         }

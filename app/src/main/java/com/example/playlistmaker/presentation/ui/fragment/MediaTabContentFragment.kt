@@ -2,13 +2,11 @@ package com.example.playlistmaker.presentation.ui.fragment
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.playlistmaker.R
 import com.example.playlistmaker.databinding.FragmentMediaContentBinding
@@ -19,7 +17,6 @@ import com.example.playlistmaker.presentation.model.TrackUi
 import com.example.playlistmaker.presentation.ui.AudioPlayerActivity
 import com.example.playlistmaker.presentation.viewmodel.media.MediaViewModel
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
-import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MediaTabContentFragment : Fragment() {
 
@@ -66,27 +63,21 @@ class MediaTabContentFragment : Fragment() {
         viewModel.state.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is MediaViewModel.State.Initial -> {
-                    binding.text.visibility = View.GONE
-                    binding.imageView.visibility = View.GONE
+                    binding.favoritesStub.visibility = View.GONE
                     binding.recyclerView.visibility = View.GONE
                     //binding.progressBar.visibility = View.VISIBLE
                 }
                 is MediaViewModel.State.Empty -> {
-                    binding.text.visibility = View.VISIBLE
-                    binding.imageView.visibility = View.VISIBLE
-                    binding.text.text = getString(R.string.media_favorite_zaglushka)
+                    binding.favoritesStub.visibility = View.VISIBLE
                     binding.recyclerView.visibility = View.GONE
                 }
                 is MediaViewModel.State.Content -> {
-                    binding.text.visibility = View.GONE
-                    binding.imageView.visibility = View.GONE
+                    binding.favoritesStub.visibility = View.GONE
                     binding.recyclerView.visibility = View.VISIBLE
                     adapter.submitList(state.tracks)
                 }
                 is MediaViewModel.State.Error -> {
-                    binding.text.visibility = View.VISIBLE
-                    binding.imageView.visibility = View.VISIBLE
-                    binding.text.text = getString(R.string.media_favorite_zaglushka)
+                    binding.favoritesStub.visibility = View.VISIBLE
                     binding.recyclerView.visibility = View.GONE
                 }
             }
@@ -95,9 +86,8 @@ class MediaTabContentFragment : Fragment() {
 
     private fun setupPlaylistsUI() {
         with(binding) {
-            button.visibility = View.VISIBLE
-            text.visibility = View.VISIBLE
-            text.text = getString(R.string.media_playlist_zaglushka)
+            playlistStub.visibility = View.VISIBLE
+            favoritesStub.visibility = View.GONE
             recyclerView.visibility = View.GONE
 
             button.setOnClickListener {
@@ -108,9 +98,8 @@ class MediaTabContentFragment : Fragment() {
 
     private fun setupFavoritesUI() {
         with(binding) {
-            button.visibility = View.GONE
-            text.visibility = View.GONE
-            imageView.visibility = View.GONE
+            playlistStub.visibility = View.GONE
+            favoritesStub.visibility = View.GONE
             recyclerView.visibility = View.VISIBLE
         }
     }
@@ -124,12 +113,6 @@ class MediaTabContentFragment : Fragment() {
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = this@MediaTabContentFragment.adapter
-            addItemDecoration(
-                DividerItemDecoration(
-                    requireContext(),
-                    DividerItemDecoration.VERTICAL
-                )
-            )
             setHasFixedSize(true)
         }
     }

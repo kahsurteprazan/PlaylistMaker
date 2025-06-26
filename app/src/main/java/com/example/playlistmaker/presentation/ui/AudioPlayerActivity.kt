@@ -130,7 +130,6 @@ class AudioPlayerActivity : AppCompatActivity() {
         playButton.setOnClickListener { viewModel.playbackControl() }
         binding.btnBackAudioPlayer.setOnClickListener { finish() }
         binding.btnLikeAudioPlayer.setOnClickListener {
-            Log.d("AudioPlayerUI", "Button clicked - calling VM")
             try {
                 viewModel.onFavoriteClicked()
             } catch (e: Exception) {

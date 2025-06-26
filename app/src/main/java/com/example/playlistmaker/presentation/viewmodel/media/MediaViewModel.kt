@@ -1,6 +1,5 @@
 package com.example.playlistmaker.presentation.viewmodel.media
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -25,7 +24,6 @@ class MediaViewModel(
     val state: LiveData<State> = _state
 
     init {
-        Log.d("MediaViewModel", "Init")
         viewModelScope.launch {
             likedTracksInteract.getLikedTracks()
                 .catch { e ->
