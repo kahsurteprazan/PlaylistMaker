@@ -13,6 +13,7 @@ import org.koin.dsl.module
 val viewModelModule = module {
     viewModel { (audioPlayer: AudioPlayerRepository) ->
         AudioPlayerViewModel(
+            likedTracksInteract = get(),
             playAudioUseCase = get(),
             startAudioUseCase = get(),
             pauseAudioUseCase = get(),
@@ -21,7 +22,9 @@ val viewModelModule = module {
     }
 
     viewModel {
-        MediaViewModel()
+        MediaViewModel(
+            likedTracksInteract = get()
+        )
     }
 
     viewModel {
