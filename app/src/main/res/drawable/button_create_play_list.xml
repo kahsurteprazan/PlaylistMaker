@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Кнопка ВЫКЛЮЧЕНА (enabled="false") -->
+    <item android:state_enabled="false">
+        <shape android:shape="rectangle">
+            <corners android:radius="8dp" />
+            <solid android:color="@color/grey_practicum_static" />
+        </shape>
+    </item>
+
+    <!-- Кнопка ВКЛЮЧЕНА (enabled="true") или состояние по умолчанию -->
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="8dp" />
+            <solid android:color="@color/blue_practicum_static" />
+        </shape>
+    </item>
+</selector>
