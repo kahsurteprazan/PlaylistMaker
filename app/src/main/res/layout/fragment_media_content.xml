@@ -2,12 +2,15 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:paddingBottom="?attr/actionBarSize">
     <!-- Favorites Section -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/favoritesStub"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:paddingBottom="?attr/actionBarSize">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
@@ -15,6 +18,7 @@
             android:layout_height="match_parent"
             android:layout_marginTop="20dp"
             android:visibility="visible"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -48,9 +52,9 @@
         <!-- Playlist Section -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/playlistStub"
-            android:visibility="gone"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:paddingBottom="?attr/actionBarSize">
 
             <Button
                 android:id="@+id/button"
@@ -73,8 +77,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginStart="16dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="86dp"
                 android:layout_marginEnd="16dp"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/button" />

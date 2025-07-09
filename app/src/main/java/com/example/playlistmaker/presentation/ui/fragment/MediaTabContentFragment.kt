@@ -64,7 +64,9 @@ class MediaTabContentFragment : Fragment() {
 
         } else {
             binding.apply {
+                recyclerView.visibility = View.GONE
                 playlistStub.visibility = View.VISIBLE
+                recyclerViewPlaylist.visibility = View.VISIBLE
                 favoritesStub.visibility = View.GONE
             }
         }
@@ -108,6 +110,7 @@ class MediaTabContentFragment : Fragment() {
 
     private fun observePlaylist() {
         viewModel.playlists.observe(viewLifecycleOwner) { playlists ->
+            binding.recyclerView.visibility = View.GONE
             adapterPlaylist.submitList(playlists)
             updatePlaylistsVisibility(playlists.isEmpty())
         }
