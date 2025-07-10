@@ -14,5 +14,7 @@
     <color name="text_grey">#AEAFB4</color>
     <color name="back_ic_audio_player">#FFFFFF</color>
     <color name="ic_clear">#1A1B22</color>
+    <color name="grey_white">#FFFFFFFF</color>
+    <color name="b_grey_white">#FFFFFF</color>
 
 </resources>

@@ -1,6 +1,7 @@
 package com.example.playlistmaker.presentation.ui
 
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
@@ -25,6 +26,8 @@ class MainActivity : AppCompatActivity() {
 
         binding.bottomNavigationView.setupWithNavController(navController)
 
+
+
         binding.bottomNavigationView.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.searchFragment -> navigateWithAnimation(R.id.searchFragment)
@@ -34,6 +37,7 @@ class MainActivity : AppCompatActivity() {
             }
             true
         }
+        setupBottomNavigation()
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -61,6 +65,22 @@ class MainActivity : AppCompatActivity() {
 
         navController.navigate(destinationId, null, options)
         return true
+    }
+
+    private fun setupBottomNavigation() {
+        val navHostFragment = supportFragmentManager
+            .findFragmentById(R.id.navHostFragment) as NavHostFragment
+
+        navHostFragment.navController.addOnDestinationChangedListener { _, destination, _ ->
+            when (destination.id) {
+                R.id.createPlaylistFragment -> {
+                    binding.bottomNavigationView.visibility = View.GONE
+                }
+                else -> {
+                    binding.bottomNavigationView.visibility = View.VISIBLE
+                }
+            }
+        }
     }
 
 }

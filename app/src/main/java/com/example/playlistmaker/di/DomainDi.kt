@@ -5,11 +5,13 @@ import com.example.playlistmaker.data.repository.ContactSupportRepositoryImpl
 import com.example.playlistmaker.data.repository.LikedTracksRepositoryImpl
 import com.example.playlistmaker.data.repository.ShareAppRepositoryImpl
 import com.example.playlistmaker.domain.impl.LikedTracksInteractImpl
+import com.example.playlistmaker.domain.impl.PlaylistInteractImpl
 import com.example.playlistmaker.domain.repository.LikedTracksRepository
 import com.example.playlistmaker.domain.use_case.media.LikedTracksInteract
 import com.example.playlistmaker.domain.use_case.player.PauseAudioUseCase
 import com.example.playlistmaker.domain.use_case.player.PlayAudioInteract
 import com.example.playlistmaker.domain.use_case.player.StartAudioUseCase
+import com.example.playlistmaker.domain.use_case.playlist.PlaylistInteract
 import com.example.playlistmaker.domain.use_case.search.AddTrackToHistoryUseCase
 import com.example.playlistmaker.domain.use_case.search.ClearHistoryUseCase
 import com.example.playlistmaker.domain.use_case.search.GetHistoryUseCase
@@ -43,6 +45,12 @@ val domainModule = module {
     factory<LikedTracksInteract> {
         LikedTracksInteractImpl(
             likedTracksRepository = get()
+        )
+    }
+
+    factory<PlaylistInteract> {
+        PlaylistInteractImpl(
+            playlistRepository = get()
         )
     }
 }

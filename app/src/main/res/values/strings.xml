@@ -18,14 +18,25 @@
     <string name="refresh" translatable="false">Обновить</string>
     <string name="clear_button_searchHistory" translatable="false">Очистить историю</string>
     <string name="text_searchHistory" translatable="false">Вы искали</string>
-    <string name="album">Альбом</string>
-    <string name="year">Год</string>
-    <string name="Genre">Жанр</string>
-    <string name="Country">Страна</string>
+    <string name="album" translatable="false">Альбом</string>
+    <string name="year" translatable="false">Год</string>
+    <string name="Genre" translatable="false">Жанр</string>
+    <string name="Country" translatable="false">Страна</string>
     <string name="Duration">Длительность</string>
     <string name="media_playlist_zaglushka">Вы не создали\nни одного плейлиста</string>
     <string name="media_favorite_zaglushka">Ваша медиатека пуста</string>
     <string name="play">Play</string>
     <string name="pause">Pause</string>
     <string name="new_playlist">Новый плейлист</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="Create">Создать</string>
+    <string name="disctiption">Описание</string>
+    <string name="naming">Название*</string>
+    <string name="discard_changes_title">\Завершить создание плейлиста?\</string>
+    <string name="discard_changes_message">\Все несохраненные данные будут потеряны\</string>
+    <string name="discard">\Завершить\</string>
+    <string name="cancel">\Отмена\</string>
+    <string name="text_u_dont_create">Вы не создали\nни одного плейлиста</string>
+    <string name="ur_media_empty">Ваша медиа пуста</string>
 </resources>
