@@ -55,6 +55,7 @@
         android:layout_marginStart="17dp"
         android:layout_marginTop="32dp"
         android:layout_marginEnd="17dp"
+        android:textCursorDrawable="@drawable/custom_cursor"
         android:hint="@string/naming"
         android:textColorHint="@color/text_black_white"
         app:boxBackgroundMode="outline"
@@ -66,6 +67,7 @@
             android:id="@+id/textInputEditName"
             style="@style/Widget.MyApp.TextInputEditText"
             android:layout_width="match_parent"
+            android:backgroundTint="@null"
             android:textCursorDrawable="@drawable/custom_cursor"
             android:layout_height="wrap_content"
             android:maxLines="1"/>
@@ -80,7 +82,6 @@
         android:layout_marginEnd="17dp"
         android:hint="@string/disctiption"
         android:textColorHint="@color/text_black_white"
-        android:backgroundTint="@null"
         app:boxBackgroundMode="outline"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
