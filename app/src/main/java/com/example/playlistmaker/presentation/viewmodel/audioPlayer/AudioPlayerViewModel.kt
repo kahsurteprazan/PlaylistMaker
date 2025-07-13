@@ -6,12 +6,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.playlistmaker.domain.model.Track
 import com.example.playlistmaker.domain.repository.AudioPlayerRepository
+import com.example.playlistmaker.domain.result.AddToPlaylistResult
 import com.example.playlistmaker.domain.use_case.media.LikedTracksInteract
 import com.example.playlistmaker.domain.use_case.player.PauseAudioUseCase
 import com.example.playlistmaker.domain.use_case.player.PlayAudioInteract
 import com.example.playlistmaker.domain.use_case.player.StartAudioUseCase
+import com.example.playlistmaker.domain.use_case.playlist.PlaylistInteract
+import com.example.playlistmaker.presentation.mappers.PlaylistMapper.toUi
+import com.example.playlistmaker.presentation.model.PlaylistUi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -21,8 +27,15 @@ class AudioPlayerViewModel(
     private val playAudioUseCase: PlayAudioInteract,
     private val startAudioUseCase: StartAudioUseCase,
     private val pauseAudioUseCase: PauseAudioUseCase,
-    private val audioPlayer: AudioPlayerRepository
+    private val audioPlayer: AudioPlayerRepository,
+    private val playlistInteract: PlaylistInteract
 ) : ViewModel() {
+
+    private val _addToPlaylistResult = MutableSharedFlow<AddToPlaylistResult>()
+    val addToPlaylistResult: SharedFlow<AddToPlaylistResult> = _addToPlaylistResult
+
+    private val _playlists = MutableLiveData<List<PlaylistUi>>()
+    val playlists: LiveData<List<PlaylistUi>> = _playlists
 
     private val _currentTrack = MutableLiveData<Track>()
     val currentTrack: LiveData<Track> = _currentTrack
@@ -34,6 +47,30 @@ class AudioPlayerViewModel(
 
     private val _errorMessage = MutableLiveData<String?>()
     val errorMessage: LiveData<String?> = _errorMessage
+
+    fun loadPlaylists() {
+        viewModelScope.launch {
+            playlistInteract.getAllPlaylists()
+                .collect { playlists ->
+                    _playlists.value = playlists.map { it.toUi() }
+                }
+        }
+    }
+
+    fun addTrackToPlaylist(playlistId: Long) {
+        val track = _currentTrack.value ?: run {
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                val result = playlistInteract.addTrackToPlaylist(track, playlistId)
+                _addToPlaylistResult.emit(result)
+            } catch (e: Exception) {
+                _addToPlaylistResult.emit(AddToPlaylistResult.Error("Ошибка: ${e.message}"))
+            }
+        }
+    }
 
     fun setTrack(track: Track) {
         viewModelScope.launch {

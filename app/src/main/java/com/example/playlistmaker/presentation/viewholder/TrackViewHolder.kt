@@ -1,6 +1,5 @@
 package com.example.playlistmaker.presentation.viewholder
 
-import android.content.res.Resources
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -9,6 +8,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.example.playlistmaker.R
 import com.example.playlistmaker.domain.model.Track
+import com.example.playlistmaker.presentation.util.DpToPx.toPx
 
 
 class TrackViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -29,9 +29,6 @@ class TrackViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             .error(R.drawable.placeholder_image)
             .transform(RoundedCorners(2.toPx()))
             .into(trackImage)
-    }
-    fun Int.toPx(): Int {
-        return (this * Resources.getSystem().displayMetrics.density).toInt()
     }
     private fun formatTrackTime(timeMillis: Long): String {
         val minutes = timeMillis / 1000 / 60

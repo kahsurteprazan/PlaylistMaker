@@ -6,13 +6,19 @@
 
     <fragment
         android:id="@+id/searchFragment"
-        android:name="com.example.playlistmaker.presentation.ui.fragment.SearchFragment"/>
+        android:name="com.example.playlistmaker.presentation.ui.fragment.SearchFragment" />
 
     <fragment
         android:id="@+id/mediaFragment"
-        android:name="com.example.playlistmaker.presentation.ui.fragment.MediaFragment"/>
-
+        android:name="com.example.playlistmaker.presentation.ui.fragment.MediaFragment" />
+        <action
+            android:id="@+id/action_to_create_playlist"
+            app:destination="@id/createPlaylistFragment" />
     <fragment
         android:id="@+id/settingFragment"
-        android:name="com.example.playlistmaker.presentation.ui.fragment.SettingFragment"/>
+        android:name="com.example.playlistmaker.presentation.ui.fragment.SettingFragment" />
+
+    <fragment
+        android:id="@+id/createPlaylistFragment"
+        android:name="com.example.playlistmaker.presentation.ui.fragment.CreatePlayListFragment" />
 </navigation>

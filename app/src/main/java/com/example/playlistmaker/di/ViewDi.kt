@@ -1,9 +1,11 @@
 package com.example.playlistmaker.di
 
 import android.app.Activity
+import androidx.lifecycle.SavedStateHandle
 import com.example.playlistmaker.domain.repository.AudioPlayerRepository
 import com.example.playlistmaker.presentation.viewmodel.audioPlayer.AudioPlayerViewModel
 import com.example.playlistmaker.presentation.viewmodel.media.MediaViewModel
+import com.example.playlistmaker.presentation.viewmodel.playlist.CreatePlaylistViewModel
 import com.example.playlistmaker.presentation.viewmodel.search.SearchViewModel
 import com.example.playlistmaker.presentation.viewmodel.setting.SettingsViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -17,13 +19,19 @@ val viewModelModule = module {
             playAudioUseCase = get(),
             startAudioUseCase = get(),
             pauseAudioUseCase = get(),
-            audioPlayer = audioPlayer
+            audioPlayer = audioPlayer,
+            playlistInteract = get()
         )
     }
 
+
+    viewModel { (state: SavedStateHandle) -> CreatePlaylistViewModel(get(), state) }
+
+
     viewModel {
         MediaViewModel(
-            likedTracksInteract = get()
+            likedTracksInteract = get(),
+            playlistInteract = get()
         )
     }
 
