@@ -4,6 +4,7 @@ import android.app.Activity
 import androidx.lifecycle.SavedStateHandle
 import com.example.playlistmaker.domain.repository.AudioPlayerRepository
 import com.example.playlistmaker.presentation.viewmodel.audioPlayer.AudioPlayerViewModel
+import com.example.playlistmaker.presentation.viewmodel.infoPlaylist.InfoPlaylistViewModel
 import com.example.playlistmaker.presentation.viewmodel.media.MediaViewModel
 import com.example.playlistmaker.presentation.viewmodel.playlist.CreatePlaylistViewModel
 import com.example.playlistmaker.presentation.viewmodel.search.SearchViewModel
@@ -49,6 +50,13 @@ val viewModelModule = module {
             themeInteract = get(),
             shareAppUseCase = get(parameters = { parametersOf(activity) }),
             contactSupportUseCase = get(parameters = { parametersOf(activity) })
+        )
+    }
+
+    viewModel {
+        InfoPlaylistViewModel(
+            playlistInteract = get(),
+            sharePlaylistUseCase = get()
         )
     }
 }

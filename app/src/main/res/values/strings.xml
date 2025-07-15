@@ -39,4 +39,7 @@
     <string name="cancel">\Отмена\</string>
     <string name="text_u_dont_create">Вы не создали\nни одного плейлиста</string>
     <string name="ur_media_empty">Ваша медиа пуста</string>
+    <string name="share">Поделится</string>
+    <string name="edit_info">Редактировать информацию</string>
+    <string name="delit_playlist">Удалить плейлист</string>
 </resources>
