@@ -4,6 +4,7 @@
     <color name="white">#FFFFFFFF</color>
     <color name="blue_practicum">#3772e7</color>
     <color name="blue_practicum_static">#3772e7</color>
+    <color name="black_practicum_static">#1A1B22</color>
     <color name="Main_Text_Colors">#FF000000</color>
     <color name="grey_search">#E6E8EB</color>
     <color name="grey_text">#AEAFB4</color>

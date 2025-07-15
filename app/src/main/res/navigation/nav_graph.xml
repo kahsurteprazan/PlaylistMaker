@@ -11,14 +11,35 @@
     <fragment
         android:id="@+id/mediaFragment"
         android:name="com.example.playlistmaker.presentation.ui.fragment.MediaFragment" />
-        <action
-            android:id="@+id/action_to_create_playlist"
-            app:destination="@id/createPlaylistFragment" />
+    <action
+        android:id="@+id/action_to_create_playlist"
+        app:destination="@id/createPlaylistFragment" />
+    <action
+        android:id="@+id/action_to_playlist_info"
+        app:destination="@id/infoPlaylist" />
+
     <fragment
         android:id="@+id/settingFragment"
         android:name="com.example.playlistmaker.presentation.ui.fragment.SettingFragment" />
 
     <fragment
         android:id="@+id/createPlaylistFragment"
-        android:name="com.example.playlistmaker.presentation.ui.fragment.CreatePlayListFragment" />
+        android:name="com.example.playlistmaker.presentation.ui.fragment.CreatePlayListFragment">
+        <argument
+            android:name="playlistId"
+            app:argType="long"
+            android:defaultValue="-1L" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/infoPlaylist"
+        android:name="com.example.playlistmaker.presentation.ui.fragment.InfoPlaylist">
+        <action
+            android:id="@+id/action_to_edit_playlist"
+            app:destination="@id/createPlaylistFragment" />
+        <argument
+            android:name="playlistId"
+            app:argType="long" />
+    </fragment>
+
 </navigation>

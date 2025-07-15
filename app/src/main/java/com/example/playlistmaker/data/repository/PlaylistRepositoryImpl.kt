@@ -1,7 +1,9 @@
 package com.example.playlistmaker.data.repository
 
+import android.util.Log
 import com.example.playlistmaker.data.db.AppDatabase
 import com.example.playlistmaker.data.db.PlaylistDbConverter
+import com.example.playlistmaker.data.db.PlaylistTrackDbConverter
 import com.example.playlistmaker.data.db.TrackDbConverter
 import com.example.playlistmaker.data.db.entity.PlaylistEntity
 import com.example.playlistmaker.domain.model.Playlist
@@ -14,7 +16,7 @@ import kotlinx.coroutines.flow.map
 class PlaylistRepositoryImpl(
     private val appDatabase: AppDatabase,
     private val converter: PlaylistDbConverter,
-    private val converterForTrack: TrackDbConverter
+    private val converterForTrack: PlaylistTrackDbConverter
 ) : PlaylistRepository {
 
     override suspend fun createPlaylist(playlist: Playlist): Long {
@@ -47,6 +49,7 @@ class PlaylistRepositoryImpl(
 
         try {
             appDatabase.playlistTrackDao().insert(trackEntity)
+            Log.d("DEBUG", "Inserted track ID ${trackEntity.trackId} to playlist_tracks")
         } catch (e: Exception) {
             return AddToPlaylistResult.Error("Ошибка добавления трека: ${e.message}")
         }
@@ -57,12 +60,87 @@ class PlaylistRepositoryImpl(
         return AddToPlaylistResult.Success
     }
 
-    override suspend fun deleteTrackFromPlaylist(playlist: Playlist, track: Track) {
-        TODO("Not yet implemented")
+
+    override suspend fun getPlaylistById(id: Long): Playlist? {
+        return appDatabase.playlistDao().getPlaylistById(id)?.let { converter.mapFromEntity(it) }
     }
 
-    override suspend fun deletePlaylist(id: Int): Long {
-        TODO("Not yet implemented")
+    override suspend fun getTracksForPlaylist(playlistId: Long): List<Track> {
+        val playlistEntity = appDatabase.playlistDao().getPlaylistById(playlistId)
+            ?: throw IllegalArgumentException("Playlist not found")
+
+        val trackIds = playlistEntity.getTrackIds()
+        Log.d("REPO_DEBUG", "Track IDs: $trackIds")
+
+        val allTracks = appDatabase.playlistTrackDao().getAllTracks()
+        Log.d("REPO_DEBUG", "All tracks in DB: ${allTracks.map { it.trackId }}")
+
+        val playlistTracks = allTracks.filter { trackIds.contains(it.trackId) }
+            .map { converterForTrack.mapFromEntity(it) }
+
+        Log.d("REPO_DEBUG", "Loaded ${playlistTracks.size} tracks for playlist")
+        return playlistTracks
+    }
+
+    override suspend fun getTotalDuration(playlistId: Long): Long {
+        val tracks = getTracksForPlaylist(playlistId)
+        return tracks.sumOf { it.trackTimeMillis }
+    }
+
+    override suspend fun deletePlaylist(id: Long): Boolean {
+        return try {
+            // 1. Получаем плейлист перед удалением
+            val playlist = appDatabase.playlistDao().getPlaylistById(id)
+                ?: return false
+
+            // 2. Получаем ID треков этого плейлиста
+            val trackIds = playlist.getTrackIds()
+
+            // 3. Удаляем сам плейлист
+            appDatabase.playlistDao().deletePlaylist(id)
+
+            // 4. Удаляем неиспользуемые треки
+            deleteOrphanedTracks(trackIds)
+
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private suspend fun deleteOrphanedTracks(trackIds: List<Int>) {
+        val orphanedTracks = trackIds.filter { trackId ->
+            !appDatabase.playlistDao().containsTrackInAnyPlaylist(trackId)
+        }
+
+        orphanedTracks.forEach { trackId ->
+            appDatabase.playlistTrackDao().deleteById(trackId)
+        }
+
+        if (orphanedTracks.isNotEmpty()) {
+            Log.d("DEBUG", "Deleted ${orphanedTracks.size} orphaned tracks")
+        }
+    }
+
+    override suspend fun updatePlaylist(playlist: Playlist) {
+        val entity = converter.mapToEntity(playlist)
+        appDatabase.playlistDao().update(entity)
+    }
+
+    override suspend fun deleteTrackFromPlaylist(playlistId: Long, trackId: Int) {
+        val playlistEntity = appDatabase.playlistDao().getPlaylistById(playlistId)
+            ?: throw IllegalArgumentException("Плейлист не найден")
+
+        val updatedEntity = playlistEntity.removeTrackId(trackId)
+        appDatabase.playlistDao().update(updatedEntity)
+
+        if (!isTrackUsedInOtherPlaylists(trackId)) {
+            appDatabase.playlistTrackDao().deleteById(trackId)
+        }
+    }
+
+    private suspend fun isTrackUsedInOtherPlaylists(trackId: Int): Boolean {
+        return appDatabase.playlistDao().containsTrackInAnyPlaylist(trackId)
     }
 
 }

@@ -12,6 +12,7 @@ import com.example.playlistmaker.domain.use_case.player.PauseAudioUseCase
 import com.example.playlistmaker.domain.use_case.player.PlayAudioInteract
 import com.example.playlistmaker.domain.use_case.player.StartAudioUseCase
 import com.example.playlistmaker.domain.use_case.playlist.PlaylistInteract
+import com.example.playlistmaker.domain.use_case.playlist.SharePlaylistUseCase
 import com.example.playlistmaker.domain.use_case.search.AddTrackToHistoryUseCase
 import com.example.playlistmaker.domain.use_case.search.ClearHistoryUseCase
 import com.example.playlistmaker.domain.use_case.search.GetHistoryUseCase
@@ -53,4 +54,6 @@ val domainModule = module {
             playlistRepository = get()
         )
     }
+
+    factory { SharePlaylistUseCase(get()) }
 }

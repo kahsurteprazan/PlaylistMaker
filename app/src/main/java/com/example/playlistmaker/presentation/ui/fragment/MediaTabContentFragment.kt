@@ -52,7 +52,6 @@ class MediaTabContentFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Log.d("MediaDebug", "Fragment создан: ${getCurrentTabType()}")
         setupRecyclerView()
 
         if (getCurrentTabType() == MediaTabType.FAVORITES) {
@@ -73,7 +72,6 @@ class MediaTabContentFragment : Fragment() {
 
 
         if (getCurrentTabType() == MediaTabType.FAVORITES) {
-            Log.d("MediaDebug", "Загружаем избранные треки")
             observeFavorites()
             viewModel.loadLikedTracks()
         } else {
@@ -89,7 +87,6 @@ class MediaTabContentFragment : Fragment() {
 
 
     private fun observeFavorites() {
-        Log.d("MediaDebug", "Наблюдение за избранным начато")
         viewModel.state.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is MediaViewModel.State.Initial -> showInit()
@@ -120,9 +117,12 @@ class MediaTabContentFragment : Fragment() {
         adapter = TrackAdapter(
 
             onItemClickListener = { track -> onTrackClick(track) },
-            onAddToHistoryClickListener = { track -> /* ничего */ }
+            onAddToHistoryClickListener = { track -> /* ничего */ },
+            onTrackLongClick = { track -> /* ничего */ }
         )
-        adapterPlaylist = PlaylistAdapter()
+        adapterPlaylist = PlaylistAdapter{ playlist ->
+            navigateToPlaylistDetails(playlist.id)
+        }
 
         binding.recyclerViewPlaylist.apply {
             layoutManager = GridLayoutManager(requireContext(), 2)
@@ -136,6 +136,12 @@ class MediaTabContentFragment : Fragment() {
             setHasFixedSize(true)
         }
 
+    }
+
+    private fun navigateToPlaylistDetails(playlistId: Long) {
+        val direction = InfoPlaylistDirections
+            .actionToPlaylistInfo(playlistId)
+        findNavController().navigate(direction)
     }
 
     private fun showInit() {

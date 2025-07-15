@@ -44,16 +44,14 @@ class MediaViewModel(
     fun loadLikedTracks() {
         viewModelScope.launch {
             _state.value = State.Initial
-            Log.d("MediaDebug", "ViewModel запустила загрузку")
             likedTracksInteract.getLikedTracks()
                 .catch { e ->
-                    Log.e("MediaDebug", "Ошибка: ${e.message}")
                     _state.value = State.Error(e.message ?: "Error loading tracks")
                 }
                 .collect { tracks ->
-                    Log.d("MediaDebug", "Треков загружено: ${tracks.size}")
                     _state.value = if (tracks.isEmpty()) State.Empty else State.Content(tracks)
                 }
         }
     }
+
 }

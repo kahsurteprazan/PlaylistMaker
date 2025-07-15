@@ -9,6 +9,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.playlistmaker.domain.model.Playlist
 import com.example.playlistmaker.domain.use_case.playlist.PlaylistInteract
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -20,6 +21,9 @@ class CreatePlaylistViewModel(
     private val interact: PlaylistInteract,
     private val state: SavedStateHandle
 ) : ViewModel() {
+
+    private val _playlistForEditing = MutableLiveData<Playlist?>()
+    val playlistForEditing: LiveData<Playlist?> = _playlistForEditing
 
     private val _playlistCreated = MutableLiveData<Long>()
     val playlistCreated: LiveData<Long> = _playlistCreated
@@ -43,6 +47,37 @@ class CreatePlaylistViewModel(
 
     init {
         _coverImagePath.value = state["coverImagePath"]
+    }
+    fun updateCoverImagePath(path: String?) {
+        _coverImagePath.value = path
+    }
+
+    fun loadPlaylistForEditing(playlistId: Long) {
+        viewModelScope.launch {
+            _playlistForEditing.value = interact.getPlaylistById(playlistId)
+        }
+    }
+
+    fun updatePlaylist(playlistId: Long, name: String, description: String?, coverImagePath: String?) {
+        viewModelScope.launch {
+            try {
+                val currentPlaylist = interact.getPlaylistById(playlistId) ?: run {
+                    _errorMessage.postValue("Плейлист не найден")
+                    return@launch
+                }
+
+                val updatedPlaylist = currentPlaylist.copy(
+                    name = name,
+                    description = description,
+                    coverImagePath = coverImagePath
+                )
+
+                interact.updatePlaylist(updatedPlaylist)
+                _playlistCreated.postValue(playlistId)
+            } catch (e: Exception) {
+                _errorMessage.postValue("Ошибка при обновлении плейлиста: ${e.message}")
+            }
+        }
     }
 
     fun hasUnsavedChanges(): Boolean {

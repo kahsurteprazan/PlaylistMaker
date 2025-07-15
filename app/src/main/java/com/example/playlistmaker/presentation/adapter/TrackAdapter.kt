@@ -14,7 +14,8 @@ import com.example.playlistmaker.presentation.viewholder.TrackViewHolder
 
 class TrackAdapter(
     private val onItemClickListener: (Track) -> Unit,
-    private val onAddToHistoryClickListener: (Track) -> Unit
+    private val onAddToHistoryClickListener: (Track) -> Unit,
+    private val onTrackLongClick: (Track) -> Unit
 ) : RecyclerView.Adapter<TrackViewHolder>() {
 
     private var tracks: List<Track> = emptyList()
@@ -33,6 +34,11 @@ class TrackAdapter(
         holder.itemView.setOnClickListener {
             onItemClickListener(track)
             onAddToHistoryClickListener(track)
+        }
+
+        holder.itemView.setOnLongClickListener {
+            onTrackLongClick(track)
+            true
         }
     }
 
