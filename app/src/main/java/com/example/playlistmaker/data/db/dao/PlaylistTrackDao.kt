@@ -17,7 +17,7 @@ interface PlaylistTrackDao {
     suspend fun deleteById(trackId: Int)
 
 
-    @Query("SELECT * FROM playlist_tracks")
+    @Query("SELECT * FROM playlist_tracks ORDER BY addedDate DESC")
     suspend fun getAllTracks(): List<PlaylistTrackEntity>
 
 }

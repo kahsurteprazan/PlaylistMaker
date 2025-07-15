@@ -128,5 +128,15 @@
         <item name="android:fontFamily">@font/ys_display_regular</item>
     </style>
 
+    <style name="MyDialogTheme" parent="@style/ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="buttonBarPositiveButtonStyle">@style/MyDialogButton.Positive</item>
+        <item name="buttonBarNegativeButtonStyle">@style/MyDialogButton.Negative</item>
+    </style>
 
+    <style name="MyDialogButton.Positive" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/black_practicum_static</item>
+    </style>
+    <style name="MyDialogButton.Negative" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/black_practicum_static</item>
+    </style>
 </resources>

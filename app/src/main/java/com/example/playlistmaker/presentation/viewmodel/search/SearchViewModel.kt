@@ -46,10 +46,9 @@ class SearchViewModel(
         viewModelScope.launch {
             _searchQuery
                 .debounce(SEARCH_DELAY)
-                .filter { it.isNotEmpty() }
                 .collect { query ->
                     if (query.isEmpty()) {
-                        _searchState.value = SearchState.Empty
+                        _searchState.value = SearchState.Initial
                     } else {
                         performSearch(query)
                     }

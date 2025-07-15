@@ -42,4 +42,5 @@
     <string name="share">Поделится</string>
     <string name="edit_info">Редактировать информацию</string>
     <string name="delit_playlist">Удалить плейлист</string>
+    <string name="none_track">Тероков нету, но ты ищи</string>
 </resources>

@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -110,7 +111,13 @@ class InfoPlaylist : Fragment() {
 
         viewModel.tracks.observe(viewLifecycleOwner) { tracks ->
             adapter.submitList(tracks)
-            Log.d("TRACKS_DEBUG", "Loaded ${tracks.size} tracks")
+            if (tracks.isEmpty()) {
+                binding.placeholder.isVisible = true
+                binding.recycler.isVisible = false
+            } else {
+                binding.placeholder.isVisible = false
+                binding.recycler.isVisible = true
+            }
         }
 
 
@@ -203,7 +210,17 @@ class InfoPlaylist : Fragment() {
         binding.backButton.setOnClickListener { findNavController().popBackStack() }
 
         binding.share.setOnClickListener   { sharePlaylist() }
-        binding.shareSheet.setOnClickListener { sharePlaylist() }
+        binding.shareSheet.setOnClickListener {
+            val playlist = viewModel.playlist.value
+            val tracks = viewModel.tracks.value?.toList() ?: emptyList()
+
+            if (playlist != null && tracks.isNotEmpty()) {
+                sharePlaylist()
+            } else {
+                BottomSheetBehavior.from(binding.playlistsBottomSheetSetting).state = BottomSheetBehavior.STATE_HIDDEN
+
+                Toast.makeText(requireContext(), "В лейлисте нет списка треков, которым можно поделиться", Toast.LENGTH_SHORT).show()
+            } }
 
         binding.edit.setOnClickListener {
             viewModel.playlist.value?.let { navigateToEditPlaylist(it.id) }
@@ -228,11 +245,11 @@ class InfoPlaylist : Fragment() {
 
     private fun sharePlaylist() {
         val playlist = viewModel.playlist.value
-        val track = viewModel.tracks.value?.toList()
-        if (playlist != null) {
-            if (track != null) {
-                viewModel.sharePlaylist(playlist, track, requireContext())
-            }
+        val tracks = viewModel.tracks.value?.toList()  ?: emptyList()
+        if (playlist != null && tracks.isNotEmpty()) {
+            viewModel.sharePlaylist(playlist, tracks, requireContext())
+        } else {
+            Toast.makeText(requireContext(), "Нельзя поделиться пустым плейлистом", Toast.LENGTH_SHORT).show()
         }
     }
 
