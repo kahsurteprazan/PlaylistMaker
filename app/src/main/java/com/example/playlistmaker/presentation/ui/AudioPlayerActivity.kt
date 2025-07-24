@@ -223,13 +223,22 @@ class AudioPlayerActivity : AppCompatActivity() {
                 BottomSheetBehavior.STATE_COLLAPSED
         }
         binding.button.setOnClickListener {
+            val fragment = CreatePlayListFragment().apply {
+                arguments = Bundle().apply {
+                    putLong("PLAYLIST_ID", -1L)
+                }
+            }
+
             supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, CreatePlayListFragment())
+                .replace(R.id.fragment_container, fragment)
                 .addToBackStack("audio")
                 .commit()
+
+            // 3. Скрываем BottomSheet
             BottomSheetBehavior.from(binding.playlistsBottomSheet).state =
                 BottomSheetBehavior.STATE_HIDDEN
 
+            // 4. Переключаем видимость
             binding.mainContainer.visibility = View.GONE
             binding.fragmentContainer.visibility = View.VISIBLE
         }

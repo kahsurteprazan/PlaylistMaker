@@ -19,12 +19,14 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.MultiTransformation
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.example.playlistmaker.R
 import com.example.playlistmaker.databinding.FragmentCreatePlayListBinding
+import com.example.playlistmaker.presentation.util.DpToPx.toPx
 import com.example.playlistmaker.presentation.viewmodel.playlist.CreatePlaylistViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
@@ -33,6 +35,11 @@ import java.io.File
 
 
 class CreatePlayListFragment : Fragment() {
+
+    private val args: CreatePlayListFragmentArgs by navArgs()
+
+    private var isEditMode = false
+    private var currentPlaylistId: Long = -1
 
     private var _binding: FragmentCreatePlayListBinding? = null
     private val binding get() = _binding!!
@@ -58,10 +65,35 @@ class CreatePlayListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        if (args.playlistId != -1L) {
+            isEditMode = true
+            currentPlaylistId = args.playlistId
+            setupEditMode(args.playlistId)
+        } else {
+            isEditMode = false
+        }
+
         setupTextWatchers()
         setupClickListeners()
         setupObservers()
         setupBackPressHandler()
+    }
+
+    private fun setupEditMode(playlistId: Long) {
+        binding.createButton.text = "Сохранить"
+
+        viewModel.loadPlaylistForEditing(playlistId)
+
+        viewModel.playlistForEditing.observe(viewLifecycleOwner) { playlist ->
+            playlist?.let {
+                binding.textInputEditName.setText(it.name)
+                binding.textInputEditDescription.setText(it.description)
+                viewModel.updateCoverImagePath(it.coverImagePath)
+                loadImage(it.coverImagePath)
+                viewModel.playlistName = it.name
+                viewModel.playlistDescription = it.description
+            }
+        }
     }
 
     private fun setupTextWatchers() {
@@ -76,13 +108,26 @@ class CreatePlayListFragment : Fragment() {
 
     private fun setupClickListeners() {
         binding.backButton.setOnClickListener {
-            checkForUnsavedChanges()
+            if (isEditMode) {
+                closeFragment()
+            } else {
+                checkForUnsavedChanges()
+            }
         }
 
         binding.createButton.setOnClickListener {
             val playlistName = binding.textInputEditName.text?.toString() ?: ""
-            viewModel.createPlaylist()
-            showPlaylistCreatedToast(playlistName)
+            if (isEditMode) {
+                viewModel.updatePlaylist(
+                    playlistId = currentPlaylistId,
+                    name = playlistName,
+                    description = binding.textInputEditDescription.text?.toString(),
+                    coverImagePath = viewModel.coverImagePath.value
+                )
+            } else {
+                viewModel.createPlaylist()
+                showPlaylistCreatedToast(playlistName)
+            }
         }
 
         binding.coverImageView.setOnClickListener {
@@ -165,10 +210,6 @@ class CreatePlayListFragment : Fragment() {
                 .into(binding.coverImageView)
         }
 
-    }
-
-    fun Int.toPx(): Int {
-        return (this * Resources.getSystem().displayMetrics.density).toInt()
     }
 
     fun showPlaylistCreatedToast(name: String) {

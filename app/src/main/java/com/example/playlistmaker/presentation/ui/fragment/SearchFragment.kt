@@ -65,11 +65,13 @@ class SearchFragment : Fragment() {
     private fun setupAdapters() {
         trackAdapter = TrackAdapter(
             onItemClickListener = ::onTrackClick,
-            onAddToHistoryClickListener = ::onAddToHistoryClick
+            onAddToHistoryClickListener = ::onAddToHistoryClick,
+            onTrackLongClick =  { track -> /* ничего */ }
         )
         historyAdapter = TrackAdapter(
             onItemClickListener = ::onTrackClick,
-            onAddToHistoryClickListener = ::onAddToHistoryClick
+            onAddToHistoryClickListener = ::onAddToHistoryClick,
+            onTrackLongClick =  { track -> /* ничего */ }
         )
     }
 

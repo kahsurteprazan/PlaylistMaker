@@ -5,10 +5,12 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import com.example.playlistmaker.R
+import com.example.playlistmaker.domain.model.Playlist
+import com.example.playlistmaker.domain.model.Track
 import com.example.playlistmaker.presentation.model.PlaylistUi
 import com.example.playlistmaker.presentation.viewholder.PlaylistViewHolder
 
-class PlaylistAdapter : ListAdapter<PlaylistUi, PlaylistViewHolder>(DiffCallback) {
+class PlaylistAdapter(private val onPlaylistClick: (PlaylistUi) -> Unit) : ListAdapter<PlaylistUi, PlaylistViewHolder>(DiffCallback) {
 
     companion object {
         val DiffCallback = object : DiffUtil.ItemCallback<PlaylistUi>() {
@@ -29,6 +31,8 @@ class PlaylistAdapter : ListAdapter<PlaylistUi, PlaylistViewHolder>(DiffCallback
     }
 
     override fun onBindViewHolder(holder: PlaylistViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        val playlist = getItem(position)
+        holder.bind(playlist)
+        holder.itemView.setOnClickListener { onPlaylistClick(playlist) }
     }
 }
